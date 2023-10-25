@@ -35,18 +35,9 @@ public class AccountController {
         session.setMaxInactiveInterval(3600);
 
         SessionToken token = sessionTokenService.getToken(avatarId, new TokenDto(request.getDeviceId(), request.getDeviceType()));
-
         extractedTokenCookie(servletResponse, token.getSessionTokenVaule());
     }
 
-    private void extractedTokenCookie(HttpServletResponse servletResponse, String tokenValue) {
-        Cookie tokenCookie = new Cookie("sessionToken", tokenValue);
-        tokenCookie.setPath("/");
-
-        tokenCookie.setMaxAge(60*60*24*30);
-
-        servletResponse.addCookie(tokenCookie);
-    }
 
 
     @PostMapping("/signup")
@@ -63,9 +54,19 @@ public class AccountController {
 
         session.setAttribute("avatarId",avatarId);
 
+        SessionToken token = sessionTokenService.getToken(avatarId, new TokenDto(signUpRequest.getDeviceId(), signUpRequest.getDeviceType()));
+        extractedTokenCookie(servletResponse, token.getSessionTokenVaule());
 
     }
 
+    private void extractedTokenCookie(HttpServletResponse servletResponse, String tokenValue) {
+        Cookie tokenCookie = new Cookie("sessionToken", tokenValue);
+        tokenCookie.setPath("/");
+
+        tokenCookie.setMaxAge(60*60*24*30);
+
+        servletResponse.addCookie(tokenCookie);
+    }
 
     private Platform getPlatform(String platform) {
         if (platform.equals(Platform.APPLE.getValue())) {

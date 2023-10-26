@@ -1,6 +1,8 @@
 package com.cherish.backend.controller;
 
 import com.cherish.backend.controller.dto.response.CommonErrorResponse;
+import com.cherish.backend.controller.dto.response.CommonValidationError;
+import com.cherish.backend.exception.NotExistAccountException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -14,9 +16,9 @@ public class ExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public CommonErrorResponse notBlankRequestHandler(BindException e) {
+    public CommonValidationError notBlankRequestHandler(BindException e) {
 
-        CommonErrorResponse errorResponse = new CommonErrorResponse("400", "잘못된 요청 입니다.");
+        CommonValidationError errorResponse = new CommonValidationError("400", "잘못된 요청 입니다.");
 
         for (FieldError error : e.getFieldErrors()) {
             errorResponse.addValidation(error.getField(), error.getDefaultMessage());
@@ -25,5 +27,16 @@ public class ExceptionController {
         return errorResponse;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(Exception.class)
+    public CommonErrorResponse commonExceptionHandler(Exception e) {
+        return new CommonErrorResponse("400", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotExistAccountException.class)
+    public CommonErrorResponse notExistAccountExceptionHandler(Exception e){
+        return new CommonErrorResponse("404",e.getMessage());
+    }
 
 }

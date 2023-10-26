@@ -2,6 +2,7 @@ package com.cherish.backend.service;
 
 import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
+import com.cherish.backend.exception.NotExistAccountException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.service.dto.LoginDto;
@@ -18,14 +19,13 @@ import java.util.Optional;
 public class AccountService {
 
     private final AccountRepository accountRepository;
-    private final AvatarRepository avatarRepository;
 
     public Long login(LoginDto loginDto) {
 
         Optional<Account> account = accountRepository.findAccountByOauthId(loginDto.getOauthId());
 
         if (account.isEmpty()) {
-            throw new IllegalStateException("로그인 정보가 없습니다.");
+            throw new NotExistAccountException();
         }
 
         return account.get().getAvatar().getId();
@@ -39,8 +39,6 @@ public class AccountService {
                 signUpDto.getBirth(),
                 signUpDto.getGender()
         );
-
-        avatarRepository.save(avatar);
 
         Account account = Account.of(
                 signUpDto.getOauthId(),

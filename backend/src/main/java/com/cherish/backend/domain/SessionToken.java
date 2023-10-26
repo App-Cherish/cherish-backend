@@ -33,7 +33,7 @@ public class SessionToken {
     private LocalDateTime expired_date;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "avatar_id")
+    @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
 
     @Column(columnDefinition = "TINYINT(1)")

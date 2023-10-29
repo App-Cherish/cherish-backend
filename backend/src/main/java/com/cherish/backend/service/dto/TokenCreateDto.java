@@ -6,14 +6,14 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class TokenDto {
+public class TokenCreateDto {
 
     private String deviceId;
 
     private String deviceType;
 
 
-    public TokenDto(String deviceId, String deviceType) {
+    public TokenCreateDto(String deviceId, String deviceType) {
         this.deviceId = deviceId;
         this.deviceType = deviceType;
     }

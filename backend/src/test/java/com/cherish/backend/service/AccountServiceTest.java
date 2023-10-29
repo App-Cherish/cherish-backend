@@ -4,6 +4,7 @@ import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
+import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.NotExistAccountException;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.service.dto.LoginDto;
@@ -13,14 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -68,7 +68,7 @@ class AccountServiceTest {
         String oauthId = "testOauthId";
         //when
         //then
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(ExistOauthIdException.class, () -> {
             accountService.signUp(new SignUpDto(oauthId,
                     Platform.KAKAO,
                     "testName",
@@ -82,7 +82,7 @@ class AccountServiceTest {
     public void signUpServiceTestIfKakaoAccountExist() throws Exception {
         String testKakaoOauthId = "testKakaoId";
 
-        accountService.signUp(new SignUpDto(oauthId,
+        accountService.signUp(new SignUpDto(testKakaoOauthId,
                 Platform.KAKAO,
                 "testName",
                 LocalDate.now(),
@@ -96,7 +96,7 @@ class AccountServiceTest {
         //given
         LoginDto loginDto = new LoginDto(oauthId, "iphone15", UUID.randomUUID().toString());
         //when
-        Long findAvatarId = accountService.login(loginDto);
+        Long findAvatarId = accountService.oauthLogin(loginDto);
         //then
         assertThat(avatar.getId()).isEqualTo(findAvatarId);
     }
@@ -109,7 +109,7 @@ class AccountServiceTest {
         LoginDto loginDto = new LoginDto(testId, "iphone15", UUID.randomUUID().toString());
         //when
         //then
-        assertThrows(NotExistAccountException.class, () -> accountService.login(loginDto));
+        assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(loginDto));
     }
 
 

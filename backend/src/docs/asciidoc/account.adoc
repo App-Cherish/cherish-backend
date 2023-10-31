@@ -1,0 +1,101 @@
+= 계정 API 페이지
+:toc: left
+:toclevels: 2
+
+== 회원가입
+
+=== curl
+
+include::{snippets}/signUpSuccess/curl-request.adoc[]
+
+=== request
+
+==== request example
+
+include::{snippets}/signUpSuccess/http-request.adoc[]
+
+==== request body spec
+
+include::{snippets}/signUpSuccess/request-fields.adoc[]
+
+==== response header
+
+include::{snippets}/signUpSuccess/response-headers.adoc[]
+
+=== response(현재  set-cookie 헤더의 session token하나만 보이는 라이브러리 오류가 있습니다. 실제로 요청 날려보면 Set-Cookie 두개로 나옵니다.)
+
+include::{snippets}/signUpSuccess/http-response.adoc[]
+
+=== exception
+
+**존재하지 않는 계정일 때**
+
+include::{snippets}/signUpFailTest1/http-response.adoc[]
+
+**이 API에서는 서버 내부 오류입니다 꼭 문의 주세요!**
+
+include::{snippets}/signUpFailTest2/http-response.adoc[]
+
+== oauth로 로그인 하기
+
+=== curl
+
+include::{snippets}/oauthLogin/curl-request.adoc[]
+
+=== request
+
+==== request example
+
+include::{snippets}/oauthLogin/http-request.adoc[]
+
+==== request body spec
+
+include::{snippets}/oauthLogin/request-fields.adoc[]
+
+==== response header
+
+include::{snippets}/oauthLogin/response-headers.adoc[]
+
+=== response(현재 session token하나만 보이는 라이브러리 오류가 있습니다. 실제로 요청 날려보면 Set-Cookie 두개로 나옵니다.)
+
+include::{snippets}/oauthLogin/http-response.adoc[]
+
+=== exception
+
+**존재하지 않는 계정일 때**
+
+include::{snippets}/oauthLoginFail1/http-response.adoc[]
+
+**이 API에서는 서버 내부 오류입니다 꼭 문의 주세요!**
+
+include::{snippets}/oauthLoginFail2/http-response.adoc[]
+
+== 토큰으로 로그인 하기
+
+=== curl
+
+include::{snippets}/tokenLoginSuccess/curl-request.adoc[]
+
+=== request
+
+==== request example
+
+include::{snippets}/tokenLoginSuccess/http-request.adoc[]
+
+==== response header
+
+include::{snippets}/tokenLoginSuccess/response-headers.adoc[]
+
+=== response(현재 session token하나만 보이는 라이브러리 오류가 있습니다. 실제로 요청 날려보면 Set-Cookie 두개로 나옵니다.)
+
+include::{snippets}/tokenLoginSuccess/http-response.adoc[]
+
+=== exception
+
+**존재하지 않는 계정일 때**
+
+include::{snippets}/tokenLoginFail1/http-response.adoc[]
+
+**이 API에서는 서버 내부 오류입니다 꼭 문의 주세요!**
+
+include::{snippets}/tokenLoginFail2/http-response.adoc[]

@@ -4,6 +4,7 @@ import com.cherish.backend.controller.dto.response.CommonErrorResponse;
 import com.cherish.backend.controller.dto.response.CommonValidationError;
 import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.NotExistAccountException;
+import com.cherish.backend.exception.NotFoundSessionException;
 import com.cherish.backend.exception.NotFountTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
@@ -53,4 +54,9 @@ public class ExceptionController {
         return new CommonErrorResponse("400", e.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(NotFoundSessionException.class)
+    public CommonErrorResponse notFountSessionExceptionHandler(Exception e) {
+        return new CommonErrorResponse("403", e.getMessage());
+    }
 }

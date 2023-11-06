@@ -2,6 +2,7 @@ package com.cherish.backend.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +14,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity(name = "diary")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Diary extends BaseEntity{
+public class Diary extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -38,8 +39,33 @@ public class Diary extends BaseEntity{
     @Column(nullable = false)
     private String deviceId;
 
+
+
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
+
+    @Builder
+    private Diary(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar) {
+        this.kind = kind;
+        this.title = title;
+        this.content = content;
+        this.writingDate = writingDate;
+        this.deviceType = deviceType;
+        this.deviceId = deviceId;
+        this.avatar = avatar;
+    }
+
+    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar) {
+        return Diary.builder()
+                .avatar(avatar)
+                .kind(kind)
+                .title(title)
+                .content(content)
+                .writingDate(writingDate)
+                .deviceType(deviceType)
+                .deviceId(deviceId)
+                .build();
+    }
 
 }

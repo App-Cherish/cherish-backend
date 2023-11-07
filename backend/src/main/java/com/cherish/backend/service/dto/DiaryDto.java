@@ -11,16 +11,18 @@ import java.time.format.DateTimeFormatter;
 @ToString
 public class DiaryDto {
 
+    String id;
     DiaryKind kind;
     String title;
     String content;
-    LocalDateTime date;
+    LocalDateTime writingDate;
 
-    public DiaryDto(DiaryKind kind, String title, String content, String date) {
+    public DiaryDto(String id, DiaryKind kind, String title, String content, String writingDate) {
+        this.id = id;
         this.kind = kind;
         this.title = title;
         this.content = content;
-        this.date = stringToLocalDateTime(date);
+        this.writingDate = stringToLocalDateTime(writingDate);
     }
 
     LocalDateTime stringToLocalDateTime(String date) {

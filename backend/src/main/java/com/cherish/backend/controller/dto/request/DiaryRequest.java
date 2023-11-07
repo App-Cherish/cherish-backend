@@ -9,12 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DiaryRequest {
 
+    String id;
     DiaryKind kind;
     String title;
     String content;
     String date;
 
-    public DiaryRequest(DiaryKind kind, String title, String content, String date) {
+    public DiaryRequest(String id, DiaryKind kind, String title, String content, String date) {
+        this.id = id;
         this.kind = kind;
         this.title = title;
         this.content = content;

@@ -22,11 +22,14 @@ public class SignUpDto {
 
     private Gender gender;
 
-    public SignUpDto(String oauthId, Platform platform, String name, LocalDate birth, Gender gender) {
+    private String deviceId;
+
+    public SignUpDto(String oauthId, Platform platform, String name, LocalDate birth, Gender gender, String deviceId) {
         this.oauthId = oauthId;
         this.platform = platform;
         this.name = name;
         this.birth = birth;
         this.gender = gender;
+        this.deviceId = deviceId;
     }
 }

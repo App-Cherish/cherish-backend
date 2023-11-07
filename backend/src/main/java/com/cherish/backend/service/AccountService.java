@@ -2,6 +2,8 @@ package com.cherish.backend.service;
 
 import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
+import com.cherish.backend.domain.SessionToken;
+import com.cherish.backend.exception.ExistLoginHistoryException;
 import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.NotExistAccountException;
 import com.cherish.backend.repositroy.AccountRepository;
@@ -30,11 +32,11 @@ public class AccountService {
         Optional<Account> account = accountRepository.findAccountByOauthId(loginDto.getOauthId());
 
         if (account.isEmpty()) {
-            if (!sessionTokenRepository.findExistTokenByDeviceId(loginDto.getDeviceId())){
-                throw new NotExistAccountException();
+            if (sessionTokenRepository.findSessionTokenByDeviceId(loginDto.getDeviceId()).isEmpty()) {
+                throw new ExistLoginHistoryException();
             }
+            throw new NotExistAccountException();
         }
-
 
         return account.get().getAvatar().getId();
     }
@@ -73,10 +75,13 @@ public class AccountService {
             throw new IllegalArgumentException("avatarId가 잘못되었습니다.");
         }
 
-        Account account = Account.of(signUpDto.getOauthId(), signUpDto.getPlatform(), findAvatar.get());
+        Account account = Account.of(
+                signUpDto.getOauthId(),
+                signUpDto.getPlatform(),
+                findAvatar.get()
+        );
 
         accountRepository.save(account);
-
         return account.getAvatar().getId();
     }
 

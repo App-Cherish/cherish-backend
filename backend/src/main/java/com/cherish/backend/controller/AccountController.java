@@ -3,6 +3,7 @@ package com.cherish.backend.controller;
 import com.cherish.backend.controller.dto.request.AnotherLoginRequest;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.SignUpRequest;
+import com.cherish.backend.controller.dto.response.AnotherPlatformResponse;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
 import com.cherish.backend.domain.SessionToken;
@@ -40,26 +41,27 @@ public class AccountController {
         if (cookie == null) {
             throw new NotFountTokenException();
         }
-
         String tokenValue = cookie.getValue();
         SessionToken token = sessionTokenService.tokenLogin(tokenValue);
         extractedCookie(servletResponse, session, token.getAvatar().getId(), token);
     }
 
     @PostMapping("/anotherplatformlogin")
-    public void anotherPlatformLogin(@RequestBody AnotherLoginRequest request, HttpServletResponse servletResponse, HttpSession session) {
+    public AnotherPlatformResponse anotherPlatformLogin(@RequestBody AnotherLoginRequest request, HttpServletResponse servletResponse, HttpSession session) {
         SessionToken findToken = sessionTokenService.getTokenByDeviceId(request.getDeviceId());
 
         Long avatarId = accountService.anotherPlatformSignUp(new AnotherPlatformSignUpDto(
                 findToken.getAvatar().getId(),
                 request.getOauthId(),
-                getPlatform(request.getPlatform()))
+                getPlatform(request.getPlatform()),
+                request.getDeviceId())
         );
 
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
         extractedCookie(servletResponse, session, avatarId, token);
-    }
 
+        return new AnotherPlatformResponse("기존에 등록되어있는 아이디로 로그인이 되었습니다.");
+    }
 
     @PostMapping("/signup")
     public void signUp(@RequestBody SignUpRequest signUpRequest, HttpServletResponse servletResponse, HttpSession session) {
@@ -72,7 +74,8 @@ public class AccountController {
                 platform,
                 signUpRequest.getName(),
                 signUpRequest.getBirth(),
-                gender));
+                gender,
+                signUpRequest.getDeviceId()));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(signUpRequest.getDeviceId(), signUpRequest.getDeviceType()));
         extractedCookie(servletResponse, session, avatarId, token);
     }

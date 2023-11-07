@@ -16,6 +16,9 @@ public class DiaryDto {
     String title;
     String content;
     LocalDateTime writingDate;
+    String deviceId;
+    String deviceType;
+
 
     public DiaryDto(String id, DiaryKind kind, String title, String content, String writingDate) {
         this.id = id;
@@ -23,6 +26,16 @@ public class DiaryDto {
         this.title = title;
         this.content = content;
         this.writingDate = stringToLocalDateTime(writingDate);
+    }
+
+    public DiaryDto(String id, DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceId, String deviceType) {
+        this.id = id;
+        this.kind = kind;
+        this.title = title;
+        this.content = content;
+        this.writingDate = writingDate;
+        this.deviceId = deviceId;
+        this.deviceType = deviceType;
     }
 
     LocalDateTime stringToLocalDateTime(String date) {

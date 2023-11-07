@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity(name = "diary")
 @Getter
@@ -24,7 +23,7 @@ public class Diary extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private DiaryKind kind;
 
-    @Column(nullable = true)
+    @Column
     private String title;
 
     @Column(nullable = false)
@@ -60,7 +59,7 @@ public class Diary extends BaseEntity {
         this.backUp = backUp;
     }
 
-    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar,BackUp backUp) {
+    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
         return Diary.builder()
                 .avatar(avatar)
                 .kind(kind)
@@ -77,8 +76,8 @@ public class Diary extends BaseEntity {
         this.backUp = changeBackUp;
     }
 
-    private String createId(){
-        return UUID.randomUUID().toString().substring(0,13).replace("-","");
+    private String createId() {
+        return UUID.randomUUID().toString().substring(0, 13).replace("-", "");
     }
 
 }

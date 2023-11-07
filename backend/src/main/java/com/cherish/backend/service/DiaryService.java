@@ -7,6 +7,7 @@ import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.BackUpRepository;
 import com.cherish.backend.repositroy.DiaryRepository;
 import com.cherish.backend.service.dto.BackUpDto;
+import com.cherish.backend.service.dto.DiaryDto;
 import com.cherish.backend.service.dto.DiarySaveResponseDto;
 import com.cherish.backend.service.dto.FirstTimeBackUpDto;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class DiaryService {
     public DiarySaveResponseDto firstTimeBackUp(FirstTimeBackUpDto firstTimeBackUpDto, Long avatarId) {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).get();
         String id = createId();
-        BackUp backUp = saveBackUP(BackUp.of(id, firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDiaryDtos().size()));
+        BackUp backUp = saveBackUP(BackUp.of(id, firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDiaryDtos().size(), findAvatar));
         List<Diary> createDiaryList = createDiaryList(firstTimeBackUpDto, findAvatar, backUp);
         diaryRepository.saveAll(createDiaryList);
 
@@ -42,7 +43,7 @@ public class DiaryService {
     public DiarySaveResponseDto backUp(BackUpDto backUpDto, Long avatarId) {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).get();
         String id = createId();
-        BackUp backUp = saveBackUP(BackUp.of(id, backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUpDto.getDiaryDtos().size()));
+        BackUp backUp = saveBackUP(BackUp.of(id, backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUpDto.getDiaryDtos().size(), findAvatar));
 
         List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(backUpDto.getBackUpId(), avatarId);
 
@@ -67,6 +68,19 @@ public class DiaryService {
                         element.getKind(), element.getTitle(), element.getContent(), element.getWritingDate(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDeviceId(), avatar, backUp
                 )
         ).toList();
+    }
+
+    public List<DiaryDto> getRecentDiaryList(String backUpId, Long avatarId) {
+        List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(backUpId, avatarId);
+
+        return findDiaryList.stream()
+                .map(d -> new DiaryDto(d.getId(),
+                        d.getKind(),
+                        d.getTitle(),
+                        d.getContent(),
+                        d.getWritingDate()
+                        , d.getDeviceId()
+                        , d.getDeviceType())).toList();
     }
 
     private List<Diary> createNewDiaryList(BackUpDto backUpDto, Avatar avatar, BackUp backUp) {

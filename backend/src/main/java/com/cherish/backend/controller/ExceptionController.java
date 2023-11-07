@@ -2,10 +2,7 @@ package com.cherish.backend.controller;
 
 import com.cherish.backend.controller.dto.response.CommonErrorResponse;
 import com.cherish.backend.controller.dto.response.CommonValidationError;
-import com.cherish.backend.exception.ExistOauthIdException;
-import com.cherish.backend.exception.NotExistAccountException;
-import com.cherish.backend.exception.NotFoundSessionException;
-import com.cherish.backend.exception.NotFountTokenException;
+import com.cherish.backend.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -58,5 +55,11 @@ public class ExceptionController {
     @ExceptionHandler(NotFoundSessionException.class)
     public CommonErrorResponse notFountSessionExceptionHandler(Exception e) {
         return new CommonErrorResponse("403", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.PERMANENT_REDIRECT)
+    @ExceptionHandler(ExistLoginHistoryException.class)
+    public CommonErrorResponse existLoginHistoryException(Exception e) {
+        return new CommonErrorResponse("308", e.getMessage());
     }
 }

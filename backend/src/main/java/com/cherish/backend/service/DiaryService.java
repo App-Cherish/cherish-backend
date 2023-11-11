@@ -36,7 +36,7 @@ public class DiaryService {
         List<Diary> createDiaryList = createDiaryList(firstTimeBackUpDto, findAvatar, backUp);
         diaryRepository.saveAll(createDiaryList);
 
-        return new DiarySaveResponseDto(firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), backUp.getId(), backUp.getCreatedDate());
+        return new DiarySaveResponseDto(firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), backUp.getId(), createDiaryList.size(),backUp.getCreatedDate());
     }
 
     @Transactional
@@ -44,30 +44,20 @@ public class DiaryService {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).get();
         String id = createId();
         BackUp backUp = saveBackUP(BackUp.of(id, backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUpDto.getDiaryDtos().size(), findAvatar));
-
-        List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(backUpDto.getBackUpId(), avatarId);
-
-        for (Diary diary : findDiaryList) {
-            diary.modifiedBackUp(backUp);
+        for (DiaryDto diaryDto : backUpDto.getDiaryDtos()) {
+           if(diaryDto.getId() != null ){
+               Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryDto.getId(), avatarId);
+               diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
+           }
         }
-
-
         diaryRepository.saveAll(createNewDiaryList(backUpDto, findAvatar, backUp));
-        return new DiarySaveResponseDto(backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUp.getId(), backUp.getCreatedDate());
+        return new DiarySaveResponseDto(backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUp.getId(), backUpDto.getDiaryDtos().size(),backUp.getCreatedDate());
     }
 
 
     @Transactional
     public BackUp saveBackUP(BackUp backUp) {
         return backUpRepository.save(backUp);
-    }
-
-    private List<Diary> createDiaryList(FirstTimeBackUpDto firstTimeBackUpDto, Avatar avatar, BackUp backUp) {
-        return firstTimeBackUpDto.getDiaryDtos().stream().map(element ->
-                Diary.of(
-                        element.getKind(), element.getTitle(), element.getContent(), element.getWritingDate(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDeviceId(), avatar, backUp
-                )
-        ).toList();
     }
 
     public List<DiaryDto> getRecentDiaryList(String backUpId, Long avatarId) {
@@ -82,6 +72,15 @@ public class DiaryService {
                         , d.getDeviceId()
                         , d.getDeviceType())).toList();
     }
+
+    private List<Diary> createDiaryList(FirstTimeBackUpDto firstTimeBackUpDto, Avatar avatar, BackUp backUp) {
+        return firstTimeBackUpDto.getDiaryDtos().stream().map(element ->
+                Diary.of(
+                        element.getKind(), element.getTitle(), element.getContent(), element.getWritingDate(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDeviceId(), avatar, backUp
+                )
+        ).toList();
+    }
+
 
     private List<Diary> createNewDiaryList(BackUpDto backUpDto, Avatar avatar, BackUp backUp) {
         return backUpDto.getDiaryDtos().stream().filter(d -> d.getId() == null).map(element ->

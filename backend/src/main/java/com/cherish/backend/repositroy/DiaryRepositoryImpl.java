@@ -9,18 +9,28 @@ import java.util.List;
 
 
 @RequiredArgsConstructor
-public class DiaryRepositoryImpl implements DiaryRepositoryCustom{
+public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
 
     @Override
-    public List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String backUpId ,Long avatarId) {
+    public List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String backUpId, Long avatarId) {
         QDiary diary = new QDiary("di");
 
         return queryFactory.selectFrom(diary)
                 .from(diary)
                 .where(diary.backUp.id.eq(backUpId).and(diary.avatar.id.eq(avatarId)))
                 .fetchAll().fetch();
+    }
+
+    @Override
+    public Diary findDiaryByIdAndAvatarId(String diaryId, Long avatarId) {
+        QDiary diary = new QDiary("di");
+
+        return queryFactory.selectFrom(diary)
+                .from(diary)
+                .where((diary.avatar.id.eq(avatarId)).and(diary.id.eq(diaryId)))
+                .fetchOne();
     }
 }

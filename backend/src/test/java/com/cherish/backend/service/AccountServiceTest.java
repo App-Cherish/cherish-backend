@@ -1,12 +1,12 @@
 package com.cherish.backend.service;
 
-import com.cherish.backend.domain.Account;
-import com.cherish.backend.domain.Avatar;
-import com.cherish.backend.domain.Gender;
-import com.cherish.backend.domain.Platform;
+import com.cherish.backend.domain.*;
+import com.cherish.backend.exception.ExistLoginHistoryException;
 import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.NotExistAccountException;
 import com.cherish.backend.repositroy.AccountRepository;
+import com.cherish.backend.repositroy.SessionTokenRepository;
+import com.cherish.backend.service.dto.AnotherPlatformSignUpDto;
 import com.cherish.backend.service.dto.LoginDto;
 import com.cherish.backend.service.dto.SignUpDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +36,9 @@ class AccountServiceTest {
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    SessionTokenRepository sessionTokenRepository;
+
     @BeforeEach
     public void init() {
         oauthId = "testOauthId";
@@ -53,7 +56,8 @@ class AccountServiceTest {
                 Platform.KAKAO,
                 "testName",
                 LocalDate.now(),
-                Gender.MALE));
+                Gender.MALE,
+                "deviceid1"));
         //when
         Account findAccount = accountRepository.findAccountByOauthId(oauthId).get();
 
@@ -73,7 +77,8 @@ class AccountServiceTest {
                     Platform.KAKAO,
                     "testName",
                     LocalDate.now(),
-                    Gender.MALE));
+                    Gender.MALE,
+                    "deviceid1"));
         });
     }
 
@@ -86,7 +91,8 @@ class AccountServiceTest {
                 Platform.KAKAO,
                 "testName",
                 LocalDate.now(),
-                Gender.MALE));
+                Gender.MALE,
+                "deviceid1"));
 
     }
 
@@ -102,8 +108,8 @@ class AccountServiceTest {
     }
 
     @Test
-    @DisplayName("정상적인 요청이 들어왔으나 존재하지 않는 계정인 경우 NotExiestAccountException을 출력한다.")
-    public void loginServiceNotExistAccountServiceTest() throws Exception {
+    @DisplayName("정상적인 요청이 들어왔으나 기존에 해당하는 기기로 로그인 한 적 없고 존재하지 않는 계정인 경우 ExistLoginHistoryException을 출력한다.")
+    public void loginServiceExistAccountServiceTest() throws Exception {
         //given
         String testId = UUID.randomUUID().toString().split("-")[0];
         LoginDto loginDto = new LoginDto(testId, "iphone15", UUID.randomUUID().toString());
@@ -112,8 +118,33 @@ class AccountServiceTest {
         assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(loginDto));
     }
 
+    @Test
+    @DisplayName("정상적인 요청이 들어왔으나 기존에 해당하는 기기로 로그인 한 적 없고 존재하지 않는 계정인 경우 ExistLoginHistoryException을 출력한다.")
+    public void loginServiceNotExistAccountServiceTest() throws Exception {
+        //given
+        String testId = "device1";
+        LoginDto loginDto = new LoginDto(testId, "iphone15", testId);
+        SessionToken sessionToken = SessionToken.of(testId, "iphone15", avatar);
+        sessionTokenRepository.save(sessionToken);
+        //when
+        //then
+        assertThrows(ExistLoginHistoryException.class, () -> accountService.oauthLogin(loginDto));
+    }
 
+    @Test
+    @DisplayName("다른 플랫폼 로그인 진행 시에 올바른 값이 들어오면 회원가입이 성공한다.")
+    public void anotherPlatformSignUpTest() throws Exception {
+        //given
+        Account account = Account.of("kakaoId", Platform.KAKAO, avatar);
+        AnotherPlatformSignUpDto dto = new AnotherPlatformSignUpDto(avatar.getId(), "appleId", Platform.APPLE, "device1");
+        //when
+        Long id = accountService.anotherPlatformSignUp(dto);
 
+        Account findAccount = accountRepository.findAccountByOauthId("appleId").get();
+        //then
+        assertThat(avatar.getId()).isEqualTo(id);
+        assertThat(findAccount.getAvatar().getId()).isEqualTo(id);
+    }
 
 
 }

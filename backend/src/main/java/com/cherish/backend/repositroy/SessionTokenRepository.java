@@ -15,5 +15,4 @@ public interface SessionTokenRepository extends JpaRepository<SessionToken, Long
     @Query(value = "select s from session_token s where s.deviceId=:deviceId")
     Optional<SessionToken> findSessionTokenByDeviceId(@Param("deviceId") String deviceId);
 
-
 }

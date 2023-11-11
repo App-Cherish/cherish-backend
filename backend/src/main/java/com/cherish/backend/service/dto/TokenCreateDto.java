@@ -12,7 +12,6 @@ public class TokenCreateDto {
 
     private String deviceType;
 
-
     public TokenCreateDto(String deviceId, String deviceType) {
         this.deviceId = deviceId;
         this.deviceType = deviceType;

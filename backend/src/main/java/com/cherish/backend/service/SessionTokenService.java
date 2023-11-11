@@ -43,7 +43,6 @@ public class SessionTokenService {
         }
 
 
-
         SessionToken token = findToken.get();
         token.deActive();
 
@@ -51,17 +50,15 @@ public class SessionTokenService {
     }
 
 
-    public SessionToken getTokenByDeviceId(String deviceId){
+    public SessionToken getTokenByDeviceId(String deviceId) {
         Optional<SessionToken> findToken = tokenRepository.findSessionTokenByDeviceId(deviceId);
 
-        if(findToken.isEmpty()){
+        if (findToken.isEmpty()) {
             throw new IllegalStateException("기존에 토큰을 발급한 적이 없습니다.");
         }
 
         return findToken.get();
     }
-
-
 
 
 }

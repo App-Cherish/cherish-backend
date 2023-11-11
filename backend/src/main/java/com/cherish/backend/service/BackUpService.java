@@ -1,6 +1,5 @@
 package com.cherish.backend.service;
 
-import com.cherish.backend.controller.argumentresolver.LoginAvatarId;
 import com.cherish.backend.domain.BackUp;
 import com.cherish.backend.repositroy.BackUpRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,7 @@ public class BackUpService {
 
     public BackUp getRecentBackUp(Long avatarId) {
         Optional<BackUp> findBackUp = backUpRepository.findBackUpByIdLatest(avatarId);
-        if(findBackUp.isEmpty()) {
+        if (findBackUp.isEmpty()) {
             throw new IllegalArgumentException("백업 기록이 존재하지 않습니다.");
         }
 

@@ -18,7 +18,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,6 +37,7 @@ public class AccountController {
 
     @PostMapping("/tokenlogin")
     public void tokenLogin(@CookieValue(value = ConstValue.tokenCookieName, required = false) Cookie cookie, HttpServletResponse servletResponse, HttpSession session) {
+
         if (cookie == null) {
             throw new NotFountTokenException();
         }

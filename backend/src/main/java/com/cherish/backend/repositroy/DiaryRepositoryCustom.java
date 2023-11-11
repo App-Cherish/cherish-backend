@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface DiaryRepositoryCustom {
 
-    List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String id, Long avatarId);
+    Diary findDiaryByIdAndAvatarId(String diaryId, Long avatarId);
 
+    List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String backUpId ,Long avatarId);
 }

@@ -11,9 +11,6 @@ import java.util.Optional;
 @Repository
 public interface BackUpRepository extends JpaRepository<BackUp, String> {
 
-    @Query("select b from BackUp b where b.id = :id")
-    Optional<BackUp> findBackUpById(@Param("id") String id);
-
     @Query("select b from BackUp b where b.avatar.id = :avatarId order by b.createdDate DESC limit 1")
     Optional<BackUp> findBackUpByIdLatest(@Param("avatarId") Long avatarId);
 

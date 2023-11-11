@@ -13,11 +13,13 @@ public class BackUpDairyResponse {
     String deviceType;
     String backUpId;
     LocalDateTime saveTime;
+    int count;
 
-    public BackUpDairyResponse(String osVersion, String deviceType, String backUpId, LocalDateTime saveTime) {
+    public BackUpDairyResponse(String osVersion, String deviceType, String backUpId, LocalDateTime saveTime, int count) {
         this.osVersion = osVersion;
         this.deviceType = deviceType;
         this.backUpId = backUpId;
         this.saveTime = saveTime;
+        this.count = count;
     }
 }

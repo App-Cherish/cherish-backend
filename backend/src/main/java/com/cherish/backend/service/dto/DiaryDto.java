@@ -20,6 +20,13 @@ public class DiaryDto {
     String deviceType;
 
 
+    public DiaryDto(DiaryKind kind, String title, String content, LocalDateTime writingDate) {
+        this.kind = kind;
+        this.title = title;
+        this.content = content;
+        this.writingDate = writingDate;
+    }
+
     public DiaryDto(String id, DiaryKind kind, String title, String content, String writingDate) {
         this.id = id;
         this.kind = kind;

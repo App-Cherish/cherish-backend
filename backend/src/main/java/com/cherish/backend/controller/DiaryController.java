@@ -27,13 +27,13 @@ public class DiaryController {
     @PostMapping("/firsttimebackup")
     public BackUpDairyResponse firstTimeBackUp(@RequestBody FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest, @LoginAvatarId Long avatarId) {
         DiarySaveResponseDto diarySaveResponseDto = diaryService.firstTimeBackUp(FirstTimeBackUpDto.of(firstTimeBackUpDiaryRequest), avatarId);
-        return new BackUpDairyResponse(diarySaveResponseDto.getOsVersion(), diarySaveResponseDto.getDeviceType(), diarySaveResponseDto.getBackUpId(), diarySaveResponseDto.getSaveTime());
+        return new BackUpDairyResponse(diarySaveResponseDto.getOsVersion(), diarySaveResponseDto.getDeviceType(), diarySaveResponseDto.getBackUpId(), diarySaveResponseDto.getSaveTime(), diarySaveResponseDto.getCount());
     }
 
     @PostMapping("/backup")
-    public BackUpDairyResponse backUp(@RequestBody BackUpDiaryRequest backUpDiaryRequest, @LoginAvatarId Long avatarId){
-        DiarySaveResponseDto diarySaveResponseDto = diaryService.backUp(BackUpDto.of(backUpDiaryRequest),avatarId);
-        return new BackUpDairyResponse(diarySaveResponseDto.getOsVersion(), diarySaveResponseDto.getDeviceType(), diarySaveResponseDto.getBackUpId(), diarySaveResponseDto.getSaveTime());
+    public BackUpDairyResponse backUp(@RequestBody BackUpDiaryRequest backUpDiaryRequest, @LoginAvatarId Long avatarId) {
+        DiarySaveResponseDto diarySaveResponseDto = diaryService.backUp(BackUpDto.of(backUpDiaryRequest), avatarId);
+        return new BackUpDairyResponse(diarySaveResponseDto.getOsVersion(), diarySaveResponseDto.getDeviceType(), diarySaveResponseDto.getBackUpId(), diarySaveResponseDto.getSaveTime(), diarySaveResponseDto.getCount());
     }
 
 

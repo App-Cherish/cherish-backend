@@ -17,8 +17,8 @@ spring:
     database: h2
     properties:
       hibernate:
-        format_sql: true
-        show-sql: true
+        format_sql: false
+        show-sql: false
   h2:
     console:
       enabled: true

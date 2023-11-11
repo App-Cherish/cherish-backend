@@ -180,7 +180,6 @@ public class AccountControllerTest {
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
         assertThat(sessionValue).isEqualTo(avatar.getId().toString());
-
     }
 
 

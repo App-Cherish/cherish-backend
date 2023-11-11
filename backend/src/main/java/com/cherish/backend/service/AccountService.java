@@ -2,7 +2,6 @@ package com.cherish.backend.service;
 
 import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
-import com.cherish.backend.domain.SessionToken;
 import com.cherish.backend.exception.ExistLoginHistoryException;
 import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.NotExistAccountException;
@@ -32,7 +31,7 @@ public class AccountService {
         Optional<Account> account = accountRepository.findAccountByOauthId(loginDto.getOauthId());
 
         if (account.isEmpty()) {
-            if (sessionTokenRepository.findSessionTokenByDeviceId(loginDto.getDeviceId()).isEmpty()) {
+            if (!sessionTokenRepository.findSessionTokenByDeviceId(loginDto.getDeviceId()).isEmpty()) {
                 throw new ExistLoginHistoryException();
             }
             throw new NotExistAccountException();

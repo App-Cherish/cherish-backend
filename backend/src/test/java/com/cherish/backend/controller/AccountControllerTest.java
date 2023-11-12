@@ -26,10 +26,10 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -86,8 +86,8 @@ public class AccountControllerTest {
                         .content(requestJson)
                 )
                 .andExpect(status().isOk())
-                .andExpect(cookie().exists(ConstValue.tokenCookieName))
-                .andDo(print())
+                .andExpect(jsonPath("$.tokenId").exists())
+                .andExpect(jsonPath("$.expiredTime").exists())
                 .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
@@ -121,7 +121,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("정상적인 로그인 요청을 수행한 경우 http status 200과 세션,세션용 토큰 쿠키를 생성한다.")
+    @DisplayName("정상적인 로그인 요청을 수행한 경우 http status 200과 세션 쿠키를 생성한다.")
     public void loginAPISuccessTest() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -140,8 +140,8 @@ public class AccountControllerTest {
                         .content(objectMapper.writeValueAsString(loginRequest))
                 )
                 .andExpect(status().isOk())
-                .andExpect(cookie().exists(ConstValue.tokenCookieName))
-                .andDo(print())
+                .andExpect(jsonPath("$.tokenId").exists())
+                .andExpect(jsonPath("$.expiredTime").exists())
                 .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
@@ -175,7 +175,36 @@ public class AccountControllerTest {
                         .content(objectMapper.writeValueAsString(anotherLoginRequest))
                 )
                 .andExpect(status().isOk())
-                .andExpect(cookie().exists(ConstValue.tokenCookieName))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.loginResponse.tokenId").exists())
+                .andExpect(jsonPath("$.loginResponse.expiredTime").exists())
+                .andReturn();
+
+        String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
+        assertThat(sessionValue).isEqualTo(avatar.getId().toString());
+    }
+
+    @Test
+    @DisplayName("토큰을 이용해서 로그인을 진행 시에 정상적으로 요청이 들어온 경우 세션쿠키와 토큰을 정상적으로 내려준다.")
+    public void tokenLoginSuccess() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        String deviceId = "testDeviceId";
+
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        accountRepository.save(Account.of(
+                testOauthId1,
+                Platform.KAKAO,
+                avatar
+        ));
+        SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
+        tokenRepository.save(token);
+        //when
+        //then
+        MvcResult mvcResult = mockMvc.perform(get("/api/account/tokenlogin?token=" + token.getSessionTokenVaule()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenId").exists())
+                .andExpect(jsonPath("$.expiredTime").exists())
                 .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();

@@ -42,11 +42,13 @@ public class SessionTokenService {
             throw new IllegalStateException("존재하지 않는 토큰입니다.");
         }
 
-
         SessionToken token = findToken.get();
         token.deActive();
 
-        return SessionToken.of(token.getDeviceId(), token.getDeviceType(), token.getAvatar());
+        return tokenRepository.save(SessionToken.of(
+                token.getDeviceId(),
+                token.getDeviceType(),
+                token.getAvatar()));
     }
 
 

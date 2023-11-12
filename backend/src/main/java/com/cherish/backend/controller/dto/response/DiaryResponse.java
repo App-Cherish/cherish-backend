@@ -1,6 +1,7 @@
 package com.cherish.backend.controller.dto.response;
 
 import com.cherish.backend.domain.DiaryKind;
+import com.cherish.backend.util.DateFormattingUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +14,7 @@ public class DiaryResponse {
     String title;
     String content;
     String kind;
-    LocalDateTime writingDate;
+    String writingDate;
     String deviceType;
     String deviceId;
 
@@ -21,7 +22,7 @@ public class DiaryResponse {
         this.title = title;
         this.content = content;
         this.kind = kind;
-        this.writingDate = writingDate;
+        this.writingDate = DateFormattingUtil.localDateTimeToString(writingDate);
         this.deviceType = deviceType;
         this.deviceId = deviceId;
     }

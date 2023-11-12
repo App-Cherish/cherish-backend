@@ -9,7 +9,10 @@ public class AnotherPlatformResponse {
 
     String message;
 
-    public AnotherPlatformResponse(String message) {
+    LoginResponse loginResponse;
+
+    public AnotherPlatformResponse(String message, LoginResponse loginResponse) {
         this.message = message;
+        this.loginResponse = loginResponse;
     }
 }

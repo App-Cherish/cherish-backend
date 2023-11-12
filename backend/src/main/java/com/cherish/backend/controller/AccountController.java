@@ -4,6 +4,7 @@ import com.cherish.backend.controller.dto.request.AnotherLoginRequest;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.SignUpRequest;
 import com.cherish.backend.controller.dto.response.AnotherPlatformResponse;
+import com.cherish.backend.controller.dto.response.LoginResponse;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
 import com.cherish.backend.domain.SessionToken;
@@ -29,10 +30,10 @@ public class AccountController {
     private final SessionTokenService sessionTokenService;
 
     @PostMapping("/oauthlogin")
-    public void oauthLogin(@RequestBody LoginRequest request, HttpServletResponse servletResponse, HttpSession session) {
+    public LoginResponse oauthLogin(@RequestBody LoginRequest request , HttpSession session) {
         Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceId(), request.getDeviceType()));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
-        extractedCookie(servletResponse, session, avatarId, token);
+        return new LoginResponse(token.getSessionTokenVaule(),token.getExpired_date());
     }
 
     @PostMapping("/tokenlogin")
@@ -58,13 +59,12 @@ public class AccountController {
         );
 
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
-        extractedCookie(servletResponse, session, avatarId, token);
 
-        return new AnotherPlatformResponse("기존에 등록되어있는 아이디로 로그인이 되었습니다.");
+        return new AnotherPlatformResponse("기존에 등록되어있는 아이디로 로그인이 되었습니다.",new LoginResponse(token.getSessionTokenVaule(),token.getExpired_date()));
     }
 
     @PostMapping("/signup")
-    public void signUp(@RequestBody SignUpRequest signUpRequest, HttpServletResponse servletResponse, HttpSession session) {
+    public LoginResponse signUp(@RequestBody SignUpRequest signUpRequest, HttpServletResponse servletResponse, HttpSession session) {
 
         Platform platform = getPlatform(signUpRequest.getPlatform());
         Gender gender = getGender(signUpRequest.getGender());
@@ -77,7 +77,7 @@ public class AccountController {
                 gender,
                 signUpRequest.getDeviceId()));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(signUpRequest.getDeviceId(), signUpRequest.getDeviceType()));
-        extractedCookie(servletResponse, session, avatarId, token);
+        return new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date());
     }
 
     private void extractedTokenCookie(HttpServletResponse servletResponse, String tokenValue) {

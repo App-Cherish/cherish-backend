@@ -2,12 +2,10 @@ package com.cherish.backend.controller.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.util.List;
 
 @Getter
-@ToString
 @NoArgsConstructor
 public class BackUpDiaryRequest {
 

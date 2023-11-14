@@ -2,12 +2,10 @@ package com.cherish.backend.service.dto;
 
 import com.cherish.backend.domain.DiaryKind;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Getter
-@ToString
 public class DiaryDto {
 
     String id;

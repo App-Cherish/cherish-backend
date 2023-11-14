@@ -2,12 +2,10 @@ package com.cherish.backend.controller.dto.response;
 
 import com.cherish.backend.util.DateFormattingUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
 public class BackUpDairyResponse {
 
     String osVersion;

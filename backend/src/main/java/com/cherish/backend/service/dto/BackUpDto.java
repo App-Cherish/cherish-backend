@@ -1,15 +1,12 @@
 package com.cherish.backend.service.dto;
 
 import com.cherish.backend.controller.dto.request.BackUpDiaryRequest;
-import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
 import com.cherish.backend.util.DateFormattingUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class BackUpDto {
 
     List<DiaryDto> diaryDtos;

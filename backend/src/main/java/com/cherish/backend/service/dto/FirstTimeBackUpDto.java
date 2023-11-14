@@ -3,12 +3,10 @@ package com.cherish.backend.service.dto;
 import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
 import com.cherish.backend.util.DateFormattingUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-@NoArgsConstructor
 public class FirstTimeBackUpDto {
 
     List<DiaryDto> diaryDtos;

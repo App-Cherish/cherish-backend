@@ -15,8 +15,6 @@ import com.cherish.backend.service.dto.AnotherPlatformSignUpDto;
 import com.cherish.backend.service.dto.LoginDto;
 import com.cherish.backend.service.dto.SignUpDto;
 import com.cherish.backend.service.dto.TokenCreateDto;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

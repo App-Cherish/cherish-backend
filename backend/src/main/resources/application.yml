@@ -23,8 +23,8 @@ spring:
     console:
       enabled: true
 
-logging.level:
-  org.hibernate.SQL: debug
+logging:
+  config: classpath:logback-spring.xml
 
 server:
   port: 80

@@ -2,6 +2,7 @@ package com.cherish.backend.service;
 
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.SessionToken;
+import com.cherish.backend.exception.OverExpiredDateException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
 import com.cherish.backend.service.dto.TokenCreateDto;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -18,6 +21,7 @@ public class SessionTokenService {
 
     private final SessionTokenRepository tokenRepository;
     private final AvatarRepository avatarRepository;
+    private final Clock clock;
 
     @Transactional
     public SessionToken createToken(Long avatarId, TokenCreateDto requestDto) {
@@ -40,6 +44,10 @@ public class SessionTokenService {
 
         if (findToken.isEmpty()) {
             throw new IllegalStateException("존재하지 않는 토큰입니다.");
+        }
+
+        if (findToken.get().getExpired_date().isBefore(LocalDateTime.now(clock))) {
+            throw new OverExpiredDateException();
         }
 
         SessionToken token = findToken.get();

@@ -61,6 +61,17 @@ class SessionTokenRepositoryTest {
         assertThat(findSessionToken.isEmpty()).isTrue();
     }
 
+    @Test
+    @DisplayName("비활성화된 세션 토큰을 조회시에 null을 출력한다.")
+    public void findSessionTokenByDeactiveSessionTokenValueNullTest() throws Exception {
+        //given
+        sessionToken.deActive();
+        //when
+        //then
+        Optional<SessionToken> findSessionToken = sessionTokenRepository.findSessionTokenBySessionTokenValue(UUID.randomUUID().toString());
+        assertThat(findSessionToken.isEmpty()).isTrue();
+    }
+
 
     @Test
     @DisplayName("deviceId로 sessiontoken을 조회할 시에 저장 되어 있는 값을 찾을 수 있어야 한다.")

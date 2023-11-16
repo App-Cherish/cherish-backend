@@ -11,7 +11,11 @@ import java.util.Optional;
 @Repository
 public interface BackUpRepository extends JpaRepository<BackUp, String> {
 
-    @Query("select b from BackUp b where b.avatar.id = :avatarId order by b.createdDate DESC limit 1")
+    @Query("select b from BackUp b where b.avatar.id = :avatarId and b.active = 1 order by b.createdDate DESC limit 1")
     Optional<BackUp> findBackUpByIdLatest(@Param("avatarId") Long avatarId);
+
+
+    @Query("select count (b) > 0 from BackUp b where b.avatar.id = :avatarId and b.active = 1 ")
+    Boolean ExistBackUpByAvatarId(@Param("avatarId") Long avatarId);
 
 }

@@ -51,6 +51,17 @@ public class SessionTokenService {
                 token.getAvatar()));
     }
 
+    @Transactional
+    public void deActiveToken(String tokenSessionValue) {
+        Optional<SessionToken> findToken = tokenRepository.findSessionTokenBySessionTokenValue(tokenSessionValue);
+
+        if (findToken.isEmpty()) {
+            throw new IllegalStateException("존재하지 않는 토큰입니다.");
+        }
+
+        SessionToken token = findToken.get();
+        token.deActive();
+    }
 
     public SessionToken getTokenByDeviceId(String deviceId) {
         Optional<SessionToken> findToken = tokenRepository.findSessionTokenByDeviceId(deviceId);

@@ -3,6 +3,9 @@ package com.cherish.backend.service;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.BackUp;
 import com.cherish.backend.domain.Diary;
+import com.cherish.backend.exception.ExistBackUpHistory;
+import com.cherish.backend.exception.NotExistAvatarException;
+import com.cherish.backend.exception.NotExistBackUpException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.BackUpRepository;
 import com.cherish.backend.repositroy.DiaryRepository;
@@ -30,28 +33,40 @@ public class DiaryService {
 
     @Transactional
     public DiarySaveResponseDto firstTimeBackUp(FirstTimeBackUpDto firstTimeBackUpDto, Long avatarId) {
-        Avatar findAvatar = avatarRepository.findAvatarById(avatarId).get();
+        Avatar findAvatar = avatarRepository.findAvatarById(avatarId).orElseThrow(NotExistAvatarException::new);
+
+        if (backUpRepository.ExistBackUpByAvatarId(avatarId)) {
+            throw new ExistBackUpHistory();
+        }
+
         String id = createId();
         BackUp backUp = saveBackUP(BackUp.of(id, firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDiaryDtos().size(), findAvatar));
         List<Diary> createDiaryList = createDiaryList(firstTimeBackUpDto, findAvatar, backUp);
-        diaryRepository.saveAll(createDiaryList);
+        diaryRepository.saveAllAndFlush(createDiaryList);
 
-        return new DiarySaveResponseDto(firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), backUp.getId(), createDiaryList.size(),backUp.getCreatedDate());
+        return new DiarySaveResponseDto(firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), backUp.getId(), createDiaryList.size(), backUp.getCreatedDate());
     }
 
     @Transactional
     public DiarySaveResponseDto backUp(BackUpDto backUpDto, Long avatarId) {
-        Avatar findAvatar = avatarRepository.findAvatarById(avatarId).get();
+        Avatar findAvatar = avatarRepository.findAvatarById(avatarId).orElseThrow(NotExistAvatarException::new);
+        BackUp findBackUp = backUpRepository.findById(backUpDto.getBackUpId()).orElseThrow(NotExistBackUpException::new);
+
+        findBackUp.deActive();
+
         String id = createId();
         BackUp backUp = saveBackUP(BackUp.of(id, backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUpDto.getDiaryDtos().size(), findAvatar));
+
         for (DiaryDto diaryDto : backUpDto.getDiaryDtos()) {
-           if(diaryDto.getId() != null ){
-               Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryDto.getId(), avatarId);
-               diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
-           }
+            if (diaryDto.getId() != null) {
+                Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryDto.getId(), avatarId);
+                diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
+            }
         }
-        diaryRepository.saveAll(createNewDiaryList(backUpDto, findAvatar, backUp));
-        return new DiarySaveResponseDto(backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUp.getId(), backUpDto.getDiaryDtos().size(),backUp.getCreatedDate());
+
+        diaryRepository.saveAllAndFlush(createNewDiaryList(backUpDto, findAvatar, backUp));
+
+        return new DiarySaveResponseDto(backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUp.getId(), backUpDto.getDiaryDtos().size(), backUp.getCreatedDate());
     }
 
 
@@ -62,6 +77,10 @@ public class DiaryService {
 
     public List<DiaryDto> getRecentDiaryList(String backUpId, Long avatarId) {
         List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(backUpId, avatarId);
+
+        if (findDiaryList.isEmpty()) {
+            throw new NotExistBackUpException();
+        }
 
         return findDiaryList.stream()
                 .map(d -> new DiaryDto(d.getId(),

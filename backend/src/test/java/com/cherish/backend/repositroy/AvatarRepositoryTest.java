@@ -59,6 +59,17 @@ class AvatarRepositoryTest {
         assertThat(findAvatar.isEmpty()).isTrue();
     }
 
+    @Test
+    @DisplayName("만약 비활성화 된 avatar id의 값을 조회시에 avatar는 null 이어야한다.")
+    public void findAvatarNullTest2() throws Exception {
+        //given
+        avatar.deActive();
+        avatarRepository.save(avatar);
+        //when
+        //then
+        assertThat(avatarRepository.findAvatarById(avatar.getId()).isEmpty()).isTrue();
+    }
+
 
 
 }

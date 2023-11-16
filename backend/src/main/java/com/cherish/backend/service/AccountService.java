@@ -31,7 +31,7 @@ public class AccountService {
         Optional<Account> account = accountRepository.findAccountByOauthId(loginDto.getOauthId());
 
         if (account.isEmpty()) {
-            if (!sessionTokenRepository.findSessionTokenByDeviceId(loginDto.getDeviceId()).isEmpty()) {
+            if (sessionTokenRepository.existSessionTokenByDeviceId(loginDto.getDeviceId())) {
                 throw new ExistLoginHistoryException();
             }
             throw new NotExistAccountException();

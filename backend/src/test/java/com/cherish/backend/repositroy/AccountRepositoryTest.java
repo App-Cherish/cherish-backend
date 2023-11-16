@@ -123,6 +123,17 @@ class AccountRepositoryTest {
         assertThat(appleAccount.getAvatar().getId()).isEqualTo(kakaoAccount.getAvatar().getId());
     }
 
+    @Test
+    @DisplayName("비활성화된 Account 엔티티를 조회시에 NULL을 출력해야 한다.")
+    public void deActiveAccountEntityReturnNULLTest() throws Exception {
+        //given
+        account.deActive();
+        accountRepository.save(account);
+        //when
+        //then
+        assertThat(accountRepository.findAccountByOauthId(account.getOauthId()).isEmpty()).isTrue();
+    }
+
 
 
 

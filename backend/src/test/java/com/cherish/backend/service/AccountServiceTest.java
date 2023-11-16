@@ -68,7 +68,7 @@ class AccountServiceTest {
     @Test
     @DisplayName("이미 존재하는 oauthId로 로그인 요청을 하는 경우 회원가입에 실패하고 예외를 출력한다.")
     public void signUpServiceExceptionTest() throws Exception {
-        //givenDataIntegrityViolationException
+        //given
         String oauthId = "testOauthId";
         //when
         //then
@@ -145,6 +145,18 @@ class AccountServiceTest {
         assertThat(avatar.getId()).isEqualTo(id);
         assertThat(findAccount.getAvatar().getId()).isEqualTo(id);
     }
+
+    @Test
+    @DisplayName("다른 플랫폼 로그인 진행 시에 올바른 값이 들어왔으나 Avatar Id값이 없으면 IllegalArgumentException을 발생시킨다. 회원가입이 성공한다.")
+    public void anotherPlatformSignUpFailTest() throws Exception {
+        Account account = Account.of("kakaoId", Platform.KAKAO, avatar);
+        AnotherPlatformSignUpDto dto = new AnotherPlatformSignUpDto(30L, "appleId", Platform.APPLE, "device1");
+
+
+        assertThrows(IllegalArgumentException.class,()-> accountService.anotherPlatformSignUp(dto));
+    }
+
+
 
 
 }

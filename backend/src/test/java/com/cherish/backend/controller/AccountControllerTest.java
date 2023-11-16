@@ -28,8 +28,8 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -149,6 +149,42 @@ public class AccountControllerTest {
     }
 
     @Test
+    @DisplayName("oauth 로그인 시도 시에 만약 같은 기기로 기존에 로그인 한 기록이 있는 경우 308 코드를 출력한다.")
+    public void loginAPIFailTest1() throws Exception {
+        String testOauthId1 = "testOauthId1";
+        String testOauthId2 = "testOauthId2";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+        accountRepository.save(account);
+        SessionToken sessionToken = SessionToken.of("iphone1234", "iphone15", avatar);
+        tokenRepository.save(sessionToken);
+        LoginRequest loginRequest = new LoginRequest(testOauthId2, "iphone1234", "iphone15");
+        //when
+        //then
+        mockMvc.perform(post("/api/account/oauthlogin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                )
+                .andExpect(status().isPermanentRedirect());
+    }
+
+    @Test
+    @DisplayName("oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 404코드를 출력한다.")
+    public void loginAPIFailTest2() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "iphone1234", "iphone15");
+        //when
+        //then
+        mockMvc.perform(post("/api/account/oauthlogin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
     @DisplayName("동일한 기기 내에서 이미 로그인한 기록이 있고 다른 플랫폼으로 로그인을 시도하였을때 만약 해당 플랫폼의 회원가입 기록이 없으면 다른 플랫폼의 회원가입을 자동으로 진행한다.")
     public void loginTestIfAnotherPlatformExistAccount() throws Exception {
         //given
@@ -211,6 +247,62 @@ public class AccountControllerTest {
         assertThat(sessionValue).isEqualTo(avatar.getId().toString());
     }
 
+    @Test
+    @DisplayName("토큰 로그인 시도시에 입력한 파라미터 값으로 토큰 값이 존재하지 않는 경우 상태코드 400을 출력한다.")
+    public void tokenLoginFailTest1() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(get("/api/account/tokenlogin"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("토큰 로그인 시도시에 파라미터 값으로 토큰 값이 존재하지만 비 활성화된 토큰 인 경우 상태코드 400을 출력한다.  ")
+    public void tokenLoginFailTest2() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        String deviceId = "testDeviceId";
+
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        accountRepository.save(Account.of(
+                testOauthId1,
+                Platform.KAKAO,
+                avatar
+        ));
+        SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
+        token.deActive();
+        tokenRepository.save(token);
+        //when
+        //then
+        mockMvc.perform(get("/api/account/tokenlogin?token=" + token.getSessionTokenVaule()))
+                .andExpect(status().isBadRequest());
+
+    }
+
+
+    @Test
+    @DisplayName("로그아웃 시도시에 session값이 만료되고 토큰 값도 만료되어야 한다.")
+    public void logoutSuccessTest() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        String deviceId = "device1234";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        accountRepository.save(Account.of(
+                testOauthId1,
+                Platform.KAKAO,
+                avatar
+        ));
+        SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
+        tokenRepository.save(token);
+
+        httpSession.setAttribute(ConstValue.sessionName,avatar.getId());
+        //when
+        //then
+        mockMvc.perform(get("/api/account/logout?token=" + token.getSessionTokenVaule())
+                        .session(httpSession))
+                .andExpect(status().isOk());
+    }
 
 
 }

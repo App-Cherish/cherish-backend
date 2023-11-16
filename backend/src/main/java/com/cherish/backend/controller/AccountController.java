@@ -1,5 +1,6 @@
 package com.cherish.backend.controller;
 
+import com.cherish.backend.controller.argumentresolver.LoginAvatarId;
 import com.cherish.backend.controller.dto.request.AnotherLoginRequest;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.SignUpRequest;
@@ -29,7 +30,7 @@ public class AccountController {
 
     @PostMapping("/oauthlogin")
     public LoginResponse oauthLogin(@RequestBody LoginRequest request, HttpSession session) {
-        Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceId(), request.getDeviceType()));
+        Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceType(), request.getDeviceId()));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
         extractedSession(session, avatarId);
         return new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date());
@@ -37,7 +38,6 @@ public class AccountController {
 
     @GetMapping("/tokenlogin")
     public LoginResponse tokenLogin(@RequestParam(name = "token") String value, HttpSession session) {
-
         if (value == null) {
             throw new NotFountTokenException();
         }
@@ -77,9 +77,16 @@ public class AccountController {
                 signUpRequest.getBirth(),
                 gender,
                 signUpRequest.getDeviceId()));
+
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(signUpRequest.getDeviceId(), signUpRequest.getDeviceType()));
         extractedSession(session, avatarId);
         return new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date());
+    }
+
+    @GetMapping("/logout")
+    public void logout(@RequestParam(name = "token") String value, HttpSession session){
+        sessionTokenService.deActiveToken(value);
+        session.invalidate();
     }
 
     public void extractedSession(HttpSession session, Long avatarId) {

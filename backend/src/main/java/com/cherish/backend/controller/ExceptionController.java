@@ -17,7 +17,6 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public CommonValidationError notBlankRequestHandler(BindException e) {
-
         CommonValidationError errorResponse = new CommonValidationError("400", "잘못된 요청 입니다.");
 
         for (FieldError error : e.getFieldErrors()) {

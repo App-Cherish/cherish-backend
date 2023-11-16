@@ -38,11 +38,11 @@ public class Diary extends BaseEntity {
     @Column(nullable = false)
     private String deviceId;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "backup_id")
     private BackUp backUp;
 

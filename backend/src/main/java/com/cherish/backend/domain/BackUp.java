@@ -6,12 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BackUp {
+public class BackUp extends BaseEntity {
 
     @Id
     @Column(name = "backup_id", unique = true)
@@ -23,10 +21,7 @@ public class BackUp {
 
     private int diaryCount;
 
-    @Column(name = "created_date",updatable = false)
-    private LocalDateTime createdDate;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
@@ -36,12 +31,11 @@ public class BackUp {
         this.osVersion = osVersion;
         this.deviceType = deviceType;
         this.diaryCount = diaryCount;
-        this.createdDate = LocalDateTime.now();
         this.avatar = avatar;
     }
 
 
-    public static BackUp of(String id,String osVersion, String deviceType, int diaryCount,Avatar avatar) {
+    public static BackUp of(String id, String osVersion, String deviceType, int diaryCount, Avatar avatar) {
         return BackUp.builder()
                 .id(id)
                 .avatar(avatar)
@@ -50,5 +44,6 @@ public class BackUp {
                 .diaryCount(diaryCount)
                 .build();
     }
+
 
 }

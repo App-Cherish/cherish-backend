@@ -30,7 +30,7 @@ public class AccountController {
 
     @PostMapping("/oauthlogin")
     public LoginResponse oauthLogin(@RequestBody LoginRequest request, HttpSession session) {
-        Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceType(), request.getDeviceId()));
+        Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceType(), request.getDeviceId(), getPlatform(request.getPlatform())));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
         extractedSession(session, avatarId);
         return new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date());
@@ -87,6 +87,13 @@ public class AccountController {
     public void logout(@RequestParam(name = "token") String value, HttpSession session){
         sessionTokenService.deActiveToken(value);
         session.invalidate();
+    }
+
+    @GetMapping("/leave")
+    public void leave(@LoginAvatarId Long avatarId, HttpSession session) {
+        accountService.leave(avatarId);
+        session.invalidate();
+
     }
 
     public void extractedSession(HttpSession session, Long avatarId) {

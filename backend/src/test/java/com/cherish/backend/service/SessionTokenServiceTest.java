@@ -54,7 +54,7 @@ class SessionTokenServiceTest {
 
 
     @Test
-    @DisplayName("avatarId와 기기와 관련된 정보를 이용해 token을 정상적으로 생성한다.")
+    @DisplayName("1.avatarId와 기기와 관련된 정보를 이용해 token을 정상적으로 생성한다.")
     public void createTokenTest() throws Exception {
         //given
         SessionToken createToken = sessionTokenService.createToken(avatar.getId(), new TokenCreateDto("asd1234", "type1"));
@@ -66,7 +66,7 @@ class SessionTokenServiceTest {
     }
 
     @Test
-    @DisplayName("tokenSessionValue를 이용해 토큰 로그인 시도 시에 토큰을 정상적으로 생성한다.")
+    @DisplayName("2.tokenSessionValue를 이용해 토큰 로그인 시도 시에 토큰을 정상적으로 생성한다.")
     public void tokenLoginTest() throws Exception {
         //given
         SessionToken createToken = sessionTokenService.tokenLogin(sessionToken.getSessionTokenVaule());
@@ -78,7 +78,7 @@ class SessionTokenServiceTest {
     }
 
     @Test
-    @DisplayName("tokenSessionValue를 통해  토큰 로그인 시도 시에 기존의 세션은 비활성화 된다.")
+    @DisplayName("3.tokenSessionValue를 통해  토큰 로그인 시도 시에 기존의 세션은 비활성화 된다.")
     public void tokenLoginDeActiveTest() throws Exception {
         //given
 
@@ -91,7 +91,7 @@ class SessionTokenServiceTest {
     }
 
     @Test
-    @DisplayName("로그인 한적 없는 deviceId로 토큰 세션 조회 요청을 한 경우 예외를 출력한다.")
+    @DisplayName("4.로그인 한적 없는 deviceId로 토큰 세션 조회 요청을 한 경우 예외를 출력한다.")
     public void getTokenDeviceIdNull() throws Exception {
         //given
         //when
@@ -100,7 +100,7 @@ class SessionTokenServiceTest {
     }
 
     @Test
-    @DisplayName("로그인 한적 있는 deviceId로 토큰 세션 발급 조회을 한 경우 토큰을 출력한다.")
+    @DisplayName("5.로그인 한적 있는 deviceId로 토큰 세션 발급 조회을 한 경우 토큰을 출력한다.")
     public void getTokenDeviceIdTest() throws Exception {
         //given
         //when
@@ -110,7 +110,7 @@ class SessionTokenServiceTest {
     }
 
     @Test
-    @DisplayName("유효기간이 지난 토큰으로 토큰로그인을 요청한 경우 예외를 출력한다.")
+    @DisplayName("6.유효기간이 지난 토큰으로 토큰로그인을 요청한 경우 예외를 출력한다.")
     public void overExpiredTokenLoginTest() throws Exception {
         //given
         Clock fixedClock = Clock.fixed(ZonedDateTime.parse("2100-01-01T00:00:00.000+09:00[Asia/Seoul]").toInstant(), ZoneId.systemDefault());
@@ -119,6 +119,17 @@ class SessionTokenServiceTest {
         //when
         //then
         assertThrows(OverExpiredDateException.class,()->sessionTokenService.tokenLogin(sessionToken.getSessionTokenVaule()));
+    }
+
+    @Test
+    @DisplayName("7.토큰을 비활성화 요청시 해당 토큰을 비활성화 하여야 한다.")
+    public void deActiveTokenTest() throws Exception {
+        //given
+        //when
+        sessionTokenService.deActiveToken(sessionToken.getSessionTokenVaule());
+        //then
+        sessionTokenRepository.findSessionTokenBySessionTokenValue(sessionToken.getSessionTokenVaule());
+        assertThat(sessionToken.getActive()).isEqualTo(0);
     }
 
 

@@ -5,15 +5,15 @@
         <layout>
             <pattern>[%thread] [%date] [%level] [%file:%line] - %msg%n</pattern>
         </layout>
-        <logGroupName>spring</logGroupName>
-        <logStreamUuidPrefix>spring log</logStreamUuidPrefix>
+        <logGroupName>cherish</logGroupName>
+        <logStreamUuidPrefix>backend</logStreamUuidPrefix>
         <logRegion>ap-northeast-2</logRegion>
         <maxBatchLogEvents>50</maxBatchLogEvents>
         <maxFlushTimeMillis>30000</maxFlushTimeMillis>
         <maxBlockTimeMillis>5000</maxBlockTimeMillis>
         <retentionTimeDays>0</retentionTimeDays>
-        <accessKeyId>{secret key}</accessKeyId>
-        <secretAccessKey>{secret access key}</secretAccessKey>
+        <accessKeyId>${AWS_ACCESS_KEY}</accessKeyId>
+        <secretAccessKey>${AWS_SECRET_KEY}</secretAccessKey>
     </appender>
     <appender name="application_log" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

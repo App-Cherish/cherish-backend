@@ -7,6 +7,7 @@ import com.cherish.backend.domain.Gender;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.BackUpRepository;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
+import com.epages.restdocs.apispec.Schema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 public class BackUpControllerDocs {
-    @Autowired
+
     MockMvc mockMvc;
 
     @Autowired
@@ -57,6 +58,7 @@ public class BackUpControllerDocs {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(documentationConfiguration(restDocumentationContextProvider))
                 .build();
+
         session = new MockHttpSession();
 
         session.setAttribute(ConstValue.sessionName, 1L);
@@ -83,6 +85,8 @@ public class BackUpControllerDocs {
                         resource(ResourceSnippetParameters.builder()
                                 .tag("BACK UP API(Header에 로그인시 받은 SESSION 쿠키값이 항상 입력이 되있어야 합니다!)")
                                 .summary("가장 최근 백업 불러오기")
+                                .description("로그인 한 계정의 최근 백업 불러오기")
+                                .requestSchema(Schema.schema("BackUp GET Scheme"))
                                 .build())));
     }
 

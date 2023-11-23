@@ -39,3 +39,5 @@ out/
 ### querydsl###
 /src/main/generated
 /http
+
+.idea

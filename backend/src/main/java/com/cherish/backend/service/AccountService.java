@@ -7,7 +7,6 @@ import com.cherish.backend.exception.*;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
-import com.cherish.backend.service.dto.AnotherPlatformSignUpDto;
 import com.cherish.backend.service.dto.LoginDto;
 import com.cherish.backend.service.dto.SignUpDto;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +81,18 @@ public class AccountService {
 
         sessionTokenRepository.findSessionTokenByAvatarId(avatarId).forEach(SessionToken::deActive);
     }
+
+    @Transactional
+    public void activate(String oauthId) {
+        Account findAccount = accountRepository.findDeActiveAccountByOauthId(oauthId).orElseThrow(AlreadyActiveException::new);
+        Avatar findAvatar = avatarRepository.findDeActiveAvatarById(findAccount.getAvatar().getId()).orElseThrow(AlreadyActiveException::new);
+
+        findAccount.active();
+        findAvatar.active();
+        accountRepository.saveAndFlush(findAccount);
+        avatarRepository.saveAndFlush(findAvatar);
+    }
+
 
 
 

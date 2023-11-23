@@ -1,6 +1,5 @@
 package com.cherish.backend.controller;
 
-import com.cherish.backend.controller.dto.request.AnotherLoginRequest;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.domain.*;
 import com.cherish.backend.repositroy.AccountRepository;
@@ -15,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,9 +24,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,11 +63,20 @@ public class AccountControllerTest {
 
     MockHttpSession httpSession;
 
+    @MockBean
+    Clock clock;
+
+    @Autowired
+    SessionTokenRepository sessionTokenRepository;
+
 
     @BeforeEach
     void setUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         httpSession = new MockHttpSession();
+        given(clock.instant()).willReturn(Clock.systemDefaultZone().instant());
+        given(clock.getZone()).willReturn(Clock.systemDefaultZone().getZone());
+
     }
 
     @AfterEach
@@ -70,7 +86,7 @@ public class AccountControllerTest {
 
 
     @Test
-    @DisplayName("정상적인 회원가입 요청을 수행한 경우 http status 200과 세션, 세션용 토큰 쿠키를 생성한다.")
+    @DisplayName("1.정상적인 회원가입을 수행한 경우 http status 200과 세션과 바디에 토큰을 출력한다. ")
     public void signUpAPISuccessTest() throws Exception {
         //given
         String requestJson = "{\"oauthId\": \"testOauthId\"," +
@@ -96,7 +112,25 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("이미 가입되어있는 oauthId 및 플랫폼인 경우 회원가입을 진행할 경우 예외를 출력한다.")
+    @DisplayName("2.정상적인 로그인 요청을 수행한 경우 http status 200과 세션과 바디에 토큰 값을 출력한다.")
+    public void loginAPISuccessTest() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+        //when
+        //then
+        MvcResult mvcResult = mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk()).andExpect(jsonPath("$.tokenId").exists()).andExpect(jsonPath("$.expiredTime").exists()).andReturn();
+
+        String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
+        assertThat(sessionValue).isEqualTo(avatar.getId().toString());
+    }
+
+    @Test
+    @DisplayName("3.이미 가입 되어있는 oauthId 및 플랫폼에 회원가입을 진행할 경우 http status 400을 출력한다.")
     public void signUpAPIFailTestExistOauthId() throws Exception {
         //given
         String testOauthId = "testOauthId";
@@ -120,108 +154,21 @@ public class AccountControllerTest {
         //then
     }
 
-    @Test
-    @DisplayName("정상적인 로그인 요청을 수행한 경우 http status 200과 세션 쿠키를 생성한다.")
-    public void loginAPISuccessTest() throws Exception {
-        //given
-        String testOauthId1 = "testOauthId1";
-        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(
-                testOauthId1,
-                Platform.KAKAO,
-                avatar);
-
-        accountRepository.save(account);
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "iphone1234", "iphone15");
-        //when
-        //then
-        MvcResult mvcResult = mockMvc.perform(post("/api/account/oauthlogin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tokenId").exists())
-                .andExpect(jsonPath("$.expiredTime").exists())
-                .andReturn();
-
-        String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
-        assertThat(sessionValue).isEqualTo(avatar.getId().toString());
-    }
 
     @Test
-    @DisplayName("oauth 로그인 시도 시에 만약 같은 기기로 기존에 로그인 한 기록이 있는 경우 308 코드를 출력한다.")
-    public void loginAPIFailTest1() throws Exception {
-        String testOauthId1 = "testOauthId1";
-        String testOauthId2 = "testOauthId2";
-        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
-        accountRepository.save(account);
-        SessionToken sessionToken = SessionToken.of("iphone1234", "iphone15", avatar);
-        tokenRepository.save(sessionToken);
-        LoginRequest loginRequest = new LoginRequest(testOauthId2, "iphone1234", "iphone15");
-        //when
-        //then
-        mockMvc.perform(post("/api/account/oauthlogin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest))
-                )
-                .andExpect(status().isPermanentRedirect());
-    }
-
-    @Test
-    @DisplayName("oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 404코드를 출력한다.")
+    @DisplayName("4.oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 404코드를 출력한다.")
     public void loginAPIFailTest2() throws Exception {
         //given
-        String testOauthId1 = "testOauthId1";
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "iphone1234", "iphone15");
+        String testOauthId1 = "testOauthId3";
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphone15");
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest))
-                )
-                .andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isNotFound());
     }
 
 
     @Test
-    @DisplayName("동일한 기기 내에서 이미 로그인한 기록이 있고 다른 플랫폼으로 로그인을 시도하였을때 만약 해당 플랫폼의 회원가입 기록이 없으면 다른 플랫폼의 회원가입을 자동으로 진행한다.")
-    public void loginTestIfAnotherPlatformExistAccount() throws Exception {
-        //given
-        String testOauthId1 = "testOauthId1";
-        String deviceId = "testDeviceId";
-        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        accountRepository.save(Account.of(
-                testOauthId1,
-                Platform.KAKAO,
-                avatar
-        ));
-        SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
-        tokenRepository.save(token);
-
-        AnotherLoginRequest anotherLoginRequest = new AnotherLoginRequest(
-                "testappleOauthId",
-                deviceId,
-                "iphone15",
-                Platform.APPLE.getValue());
-        //when
-        //then
-        MvcResult mvcResult = mockMvc.perform(post("/api/account/anotherplatformlogin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(anotherLoginRequest))
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.loginResponse.tokenId").exists())
-                .andExpect(jsonPath("$.loginResponse.expiredTime").exists())
-                .andReturn();
-
-        String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
-        assertThat(sessionValue).isEqualTo(avatar.getId().toString());
-    }
-
-    @Test
-    @DisplayName("토큰을 이용해서 로그인을 진행 시에 정상적으로 요청이 들어온 경우 세션쿠키와 토큰을 정상적으로 내려준다.")
+    @DisplayName("5.토큰 로그인 시도시에 정상적으로 요청을 수행한 경우 http status 200과 세션과 바디에 토큰 값을 출력한다.")
     public void tokenLoginSuccess() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -230,9 +177,7 @@ public class AccountControllerTest {
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
         accountRepository.save(Account.of(
                 testOauthId1,
-                Platform.KAKAO,
-                avatar
-        ));
+                Platform.KAKAO, avatar));
         SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
         tokenRepository.save(token);
         //when
@@ -248,41 +193,145 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("토큰 로그인 시도시에 입력한 파라미터 값으로 토큰 값이 존재하지 않는 경우 상태코드 400을 출력한다.")
+    @DisplayName("6.토큰 로그인 시도시에 입력한 파라미터 값으로 토큰 값이 존재하지 않는 경우 상태코드 400을 출력한다.")
     public void tokenLoginFailTest1() throws Exception {
         //given
         //when
         //then
-        mockMvc.perform(get("/api/account/tokenlogin"))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/account/tokenlogin")).andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("토큰 로그인 시도시에 파라미터 값으로 토큰 값이 존재하지만 비 활성화된 토큰 인 경우 상태코드 400을 출력한다.  ")
+    @DisplayName("7.토큰 로그인 시도시에 파라미터 값으로 들어온 토큰이 존재하지만 서버 내부에서 비 활성화된 토큰인 경우 상태코드 400을 출력한다.")
     public void tokenLoginFailTest2() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
         String deviceId = "testDeviceId";
 
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        accountRepository.save(Account.of(
-                testOauthId1,
-                Platform.KAKAO,
-                avatar
-        ));
+        accountRepository.save(Account.of(testOauthId1, Platform.KAKAO, avatar));
         SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
         token.deActive();
         tokenRepository.save(token);
         //when
         //then
-        mockMvc.perform(get("/api/account/tokenlogin?token=" + token.getSessionTokenVaule()))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/account/tokenlogin?token=" + token.getSessionTokenVaule())).andExpect(status().isBadRequest());
 
     }
 
 
     @Test
-    @DisplayName("로그아웃 시도시에 session값이 만료되고 토큰 값도 만료되어야 한다.")
+    @DisplayName("8.oauth 로그인 시에 정상적인 요청이 들어왔으나 OauthID는 일치하나 플랫폼이 일치하지 않는 경우 상태코드 404를 출력한다.")
+    public void oauthLoginFailTest3() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "apple", "iphone1234", "iphon15");
+        //when
+        //then
+        mockMvc.perform(post("/api/account/oauthlogin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                ).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("9.oauth 로그인 시에 정상적인 요청이 들어왔으나 플랫폼은 일치하나 oauthID가 일치하지 않는 경우 상태코드 404를 출력한다.")
+    public void oauthLoginFailTest4() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+
+        LoginRequest loginRequest = new LoginRequest(UUID.randomUUID().toString(), "kakao", "iphone1234", "iphon15");
+        //when
+        //then
+        mockMvc.perform(post("/api/account/oauthlogin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    @DisplayName("10.회원탈퇴 이후 일주일이 지나지 않은 상태에서 로그인을 진행하는 경우 상태코드 300을 출력한다.")
+    public void oauthLoginFailTest6() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(
+                testOauthId1,
+                Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+        //when
+        //then
+        accountService.leave(avatar.getId());
+
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+
+
+        mockMvc.perform(post("/api/account/oauthlogin")
+                        .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))
+                ).andExpect(status().isMultipleChoices());
+    }
+
+    @Test
+    @DisplayName("11.회원탈퇴 이후 일주일이 지난 상태에서 로그인을 진행하는 경우 상태코드 404을 출력한다.")
+    public void oauthLoginFailTest5() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(
+                testOauthId1,
+                Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+
+        accountService.leave(avatar.getId());
+
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+        //when
+        Clock fixedClock = Clock.fixed(ZonedDateTime.now().minusDays(8).toInstant(), ZoneId.systemDefault());
+        given(clock.instant()).willReturn(fixedClock.instant());
+        given(clock.getZone()).willReturn(fixedClock.getZone());
+        //then
+        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isNotFound());
+
+    }
+
+
+    @Test
+    @DisplayName("12.회원탈퇴 시에는 세션 값 및 세션 토큰값을 전부 비활성화 하여야 한다.")
+    public void leaveTest() throws Exception {
+        //given
+        String testOauthId1 = "testOauthId1";
+        Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
+        Account account = Account.of(
+                testOauthId1,
+                Platform.KAKAO, avatar);
+
+        accountRepository.save(account);
+        SessionToken sessionToken = SessionToken.of("device1", "device15", avatar);
+        sessionTokenRepository.save(sessionToken);
+        httpSession.setAttribute(ConstValue.sessionName, avatar.getId());
+        //when
+        //then
+        mockMvc.perform(get("/api/account/leave").session(httpSession)).andExpect(status().isOk());
+
+        assertThrows(IllegalStateException.class, () -> httpSession.getAttribute(ConstValue.sessionName).toString());
+        assertThat(sessionToken.getActive()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("13.로그아웃 시도시에 session값이 만료되고 토큰 값도 만료되어야 한다.")
     public void logoutSuccessTest() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -302,6 +351,8 @@ public class AccountControllerTest {
         mockMvc.perform(get("/api/account/logout?token=" + token.getSessionTokenVaule())
                         .session(httpSession))
                 .andExpect(status().isOk());
+
+        assertThrows(IllegalStateException.class, () -> httpSession.getAttribute(ConstValue.sessionName).toString());
     }
 
 

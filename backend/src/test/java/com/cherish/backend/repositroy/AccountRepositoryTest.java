@@ -4,7 +4,9 @@ import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -60,7 +62,7 @@ class AccountRepositoryTest {
     @Test
     @DisplayName("oauthId 값으로 account 조회시에 해당하는 값이 조회 하였던 oauthId와 일치 하여야 한다..")
     public void findAccountTest() {
-        Optional<Account> account = accountRepository.findAccountByOauthId(oauthId);
+        Optional<Account> account = accountRepository.findActiveAccountByOauthId(oauthId);
         assertThat(account.get().getOauthId()).isEqualTo(oauthId);
     }
 
@@ -68,7 +70,7 @@ class AccountRepositoryTest {
     @DisplayName("oauthId 값으로 account 조회 시에 해당하는 값이 존재하지 않으면 null을 출력해야 한다.")
     public void findAccountNullTest() {
         String mockId = "";
-        Optional<Account> account = accountRepository.findAccountByOauthId(mockId);
+        Optional<Account> account = accountRepository.findDeActiveAccountByOauthId(mockId);
 
         assertThat(account.isEmpty()).isTrue();
     }
@@ -124,14 +126,14 @@ class AccountRepositoryTest {
     }
 
     @Test
-    @DisplayName("비활성화된 Account 엔티티를 조회시에 NULL을 출력해야 한다.")
+    @DisplayName("비활성화된 Account 엔티티를 조회시에 엔티티값을 출력해야 한다.")
     public void deActiveAccountEntityReturnNULLTest() throws Exception {
         //given
         account.deActive();
         accountRepository.save(account);
         //when
         //then
-        assertThat(accountRepository.findAccountByOauthId(account.getOauthId()).isEmpty()).isTrue();
+        assertThat(accountRepository.findDeActiveAccountByOauthId(account.getOauthId()).isPresent()).isTrue();
     }
 
 

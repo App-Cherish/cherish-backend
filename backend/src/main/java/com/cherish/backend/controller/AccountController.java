@@ -47,7 +47,15 @@ public class AccountController {
         return new LoginResponse(token.getSessionTokenVaule(),token.getExpired_date());
     }
 
+    @PostMapping("/activate")
+    public LoginResponse activate(@RequestBody LoginRequest loginRequest, HttpSession session) {
+        accountService.activate(loginRequest.getOauthId());
+        Long avatarId = accountService.oauthLogin(new LoginDto(loginRequest.getOauthId(), loginRequest.getDeviceType(), loginRequest.getDeviceId(), getPlatform(loginRequest.getPlatform())));
+        SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(loginRequest.getDeviceId(), loginRequest.getDeviceType()));
+        extractedSession(session, avatarId);
 
+        return new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date());
+    }
 
     @PostMapping("/signup")
     public LoginResponse signUp(@RequestBody SignUpRequest signUpRequest, HttpSession session) {

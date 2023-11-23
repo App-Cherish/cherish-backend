@@ -56,9 +56,9 @@ public class ExceptionController {
         return new CommonErrorResponse("403", e.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.PERMANENT_REDIRECT)
-    @ExceptionHandler(ExistLoginHistoryException.class)
-    public CommonErrorResponse existLoginHistoryException(Exception e) {
-        return new CommonErrorResponse("308", e.getMessage());
+    @ResponseStatus(HttpStatus.MULTIPLE_CHOICES)
+    @ExceptionHandler(LeaveAccountStoreException.class)
+    public CommonErrorResponse leaveAccountStoreException(Exception e) {
+        return new CommonErrorResponse("300", e.getMessage());
     }
 }

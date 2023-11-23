@@ -83,23 +83,9 @@ public class AccountService {
         sessionTokenRepository.findSessionTokenByAvatarId(avatarId).forEach(SessionToken::deActive);
     }
 
-    @Transactional
-    public Long anotherPlatformSignUp(AnotherPlatformSignUpDto signUpDto) {
-        Optional<Avatar> findAvatar = avatarRepository.findAvatarById(signUpDto.getAvatarId());
 
-        if (findAvatar.isEmpty()) {
-            throw new IllegalArgumentException("avatarId가 잘못되었습니다.");
-        }
 
-        Account account = Account.of(
-                signUpDto.getOauthId(),
-                signUpDto.getPlatform(),
-                findAvatar.get()
-        );
 
-        accountRepository.save(account);
-        return account.getAvatar().getId();
-    }
 
 
 }

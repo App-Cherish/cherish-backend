@@ -47,22 +47,7 @@ public class AccountController {
         return new LoginResponse(token.getSessionTokenVaule(),token.getExpired_date());
     }
 
-    @PostMapping("/anotherplatformlogin")
-    public AnotherPlatformResponse anotherPlatformLogin(@RequestBody AnotherLoginRequest request, HttpSession session) {
-        SessionToken findToken = sessionTokenService.getTokenByDeviceId(request.getDeviceId());
 
-        Long avatarId = accountService.anotherPlatformSignUp(new AnotherPlatformSignUpDto(
-                findToken.getAvatar().getId(),
-                request.getOauthId(),
-                getPlatform(request.getPlatform()),
-                request.getDeviceId())
-        );
-
-        SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
-        extractedSession(session, avatarId);
-
-        return new AnotherPlatformResponse("기존에 등록되어있는 아이디로 로그인이 되었습니다.", new LoginResponse(token.getSessionTokenVaule(), token.getExpired_date()));
-    }
 
     @PostMapping("/signup")
     public LoginResponse signUp(@RequestBody SignUpRequest signUpRequest, HttpSession session) {
@@ -95,6 +80,8 @@ public class AccountController {
         session.invalidate();
 
     }
+
+
 
     public void extractedSession(HttpSession session, Long avatarId) {
         session.setAttribute(ConstValue.sessionName, avatarId);

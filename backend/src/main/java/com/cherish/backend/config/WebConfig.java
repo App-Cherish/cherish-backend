@@ -28,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/api/test/destroy")
-                .excludePathPatterns("/api/account/oauthlogin", "/api/account/tokenlogin", "/api/account/anotherplatformlogin", "/api/account/signup")
+                .excludePathPatterns("/api/account/**")
                 .excludePathPatterns("/", "/error","/h2-console","/favicon.ico","/error");
     }
 }

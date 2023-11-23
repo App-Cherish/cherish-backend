@@ -14,4 +14,7 @@ public interface AvatarRepository extends JpaRepository<Avatar, Long> {
     @Query("select a from avatar a where a.id = :avatarId and a.active = 1")
     Optional<Avatar> findAvatarById(@Param("avatarId") Long avatarId);
 
+    @Query("select a from avatar a where a.id = :avatarId and a.active = 0")
+    Optional<Avatar> findDeActiveAvatarById(@Param("avatarId") Long avatarId);
+
 }

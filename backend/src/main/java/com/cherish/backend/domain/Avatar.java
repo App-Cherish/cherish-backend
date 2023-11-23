@@ -18,7 +18,7 @@ public class Avatar extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    @Column(name = "avatar_id", unique = true, nullable = false)
+    @Column(name = "avatar_id", nullable = false)
     private Long id;
 
     @Column(nullable = false)

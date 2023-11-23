@@ -13,14 +13,14 @@ import static jakarta.persistence.GenerationType.*;
 @Entity(name = "account")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Account extends BaseEntity{
+public class Account extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "account_id", unique = true)
     private Long id;
 
-    @Column(name = "oauth_id")
+    @Column(name = "oauth_id", unique = true, nullable = false)
     private String oauthId;
 
     @Column(nullable = false)
@@ -28,10 +28,10 @@ public class Account extends BaseEntity{
     private Platform platform;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "avatar_id")
+    @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
 
-    public static Account of(String oauthId,Platform platform, Avatar avatar){
+    public static Account of(String oauthId, Platform platform, Avatar avatar) {
         return Account.builder()
                 .oauthId(oauthId)
                 .platform(platform)

@@ -1,8 +1,17 @@
+//swagger
+buildscript {
+	ext {
+		restdocsApiSpecVersion = '0.17.1'
+	}
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.1.5'
 	id 'io.spring.dependency-management' version '1.1.3'
 	id 'org.asciidoctor.jvm.convert' version '3.3.2'
+	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
+	id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
 group = 'com.cherish'
@@ -26,19 +35,33 @@ ext {
 	set('snippetsDir', file("build/generated-snippets"))
 }
 
+
+tasks.named('asciidoctor') {
+	inputs.dir snippetsDir
+	dependsOn test
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.session:spring-session-core'
 	implementation 'org.springframework.session:spring-session-jdbc'
-	compileOnly 'org.projectlombok:lombok'
+    testImplementation 'junit:junit:4.13.1'
+    compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 	testImplementation 'org.springframework.security:spring-security-test'
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'com.epages:restdocs-api-spec-mockmvc:' + restdocsApiSpecVersion
+	implementation group: 'ca.pjer', name: 'logback-awslogs-appender', version: '1.6.0'
+	swaggerUI 'org.webjars:swagger-ui:4.11.1'
 }
 
 tasks.named('test') {
@@ -46,7 +69,52 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+def querydslSrcDir = 'src/main/generated'
+
+clean {
+	delete file(querydslSrcDir)
+}
+
+tasks.withType(JavaCompile) {
+	options.generatedSourceOutputDirectory = file(querydslSrcDir)
+}
+
+swaggerSources {
+	sample {
+		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
+	}
+}
+
+openapi3 {
+	servers = [
+			{ url = "https://api.hoydev.com" }
+	]
+	title = "API 문서"
+	description = "RestDocsWithSwagger Docs"
+	version = "0.0.1"
+	format = "yaml"
+}
+
+tasks.withType(GenerateSwaggerUI) {
+	dependsOn 'openapi3'
+	doFirst {
+		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
+
+		def securitySchemesContent =  "  securitySchemes:\n" +  \
+                                      "    APIKey:\n" +  \
+                                      "      type: apiKey\n" +  \
+                                      "      name: SESSION\n" +  \
+                                      "      in: COOKIE\n" + \
+                                      "security:\n" +
+				"  - APIKey: []  # Apply the security scheme here"
+
+		swaggerUIFile.append securitySchemesContent
+	}
+}
+
+bootJar {
+	dependsOn generateSwaggerUISample
+	from("${generateSwaggerUISample.outputDir}") {
+		into 'static/docs'
+	}
 }

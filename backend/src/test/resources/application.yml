@@ -4,26 +4,16 @@ spring:
     driverClassName: org.h2.Driver
     username: sa
     password:
-
   session:
     jdbc:
       store-type: jdbc
       table-name: SPRING_SESSION
-
-
   jpa:
     hibernate:
       ddl-auto: create
     database: h2
-    properties:
-      hibernate:
-        format_sql: true
-        show-sql: true
-  h2:
-    console:
-      enabled: true
 
-logging.level:
-  org.hibernate.SQL: debug
+logging:
+  config:
 
 

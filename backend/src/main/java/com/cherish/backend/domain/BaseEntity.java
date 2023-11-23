@@ -31,9 +31,11 @@ public abstract class BaseEntity {
 
 
     @Column(columnDefinition = "TINYINT(1)")
-    private int active=1;
+    private int active = 1;
 
     public void deActive() {
         active = 0;
     }
+
+    public void active() {active = 1;}
 }

@@ -1,0 +1,33 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    #    url: jdbc:h2:mem:cherish;MODE=MYSQL
+    #    driverClassName: org.h2.Driver
+    #    username: sa
+    #    password:
+    url: ${DATABASE_URL}:3306/cherish-backend
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
+  session:
+    jdbc:
+      store-type: jdbc
+      table-name: SPRING_SESSION
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database: mysql
+    properties:
+      hibernate:
+        format_sql: false
+        show-sql: false
+
+logging:
+  config: classpath:logback-spring.xml
+server:
+  port: 80

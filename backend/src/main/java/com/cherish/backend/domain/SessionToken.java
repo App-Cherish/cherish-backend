@@ -33,11 +33,22 @@ public class SessionToken {
     private LocalDateTime expired_date;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "avatar_id")
+    @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
 
     @Column(columnDefinition = "TINYINT(1)")
     private int active;
+
+    @Builder
+    private SessionToken(String sessionTokenVaule, String deviceId, String deviceType, LocalDateTime created_date, LocalDateTime expired_date, Avatar avatar, int active) {
+        this.sessionTokenVaule = sessionTokenVaule;
+        this.deviceId = deviceId;
+        this.deviceType = deviceType;
+        this.created_date = created_date;
+        this.expired_date = expired_date;
+        this.avatar = avatar;
+        this.active = active;
+    }
 
     public static SessionToken of(String deviceId, String deviceType, Avatar avatar) {
         return SessionToken.builder()
@@ -51,14 +62,7 @@ public class SessionToken {
                 .build();
     }
 
-    @Builder
-    private SessionToken(String sessionTokenVaule, String deviceId, String deviceType, LocalDateTime created_date, LocalDateTime expired_date, Avatar avatar, int active) {
-        this.sessionTokenVaule = sessionTokenVaule;
-        this.deviceId = deviceId;
-        this.deviceType = deviceType;
-        this.created_date = created_date;
-        this.expired_date = expired_date;
-        this.avatar = avatar;
-        this.active = active;
+    public void deActive() {
+        this.active = 0;
     }
 }

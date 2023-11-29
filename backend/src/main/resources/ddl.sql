@@ -71,6 +71,20 @@ create table if not exists back_up
     constraint foreign key (avatar_id) references avatar (avatar_id)
 );
 
+create table if not exists session_token
+(
+    active              tinyint(1)   null,
+    avatar_id           bigint       not null,
+    created_date        datetime(6)  null,
+    expired_date        datetime(6)  null,
+    session_token_id    bigint auto_increment
+        primary key,
+    device_id           varchar(255) null,
+    device_type         varchar(255) null,
+    session_token_vaule varchar(255) null,
+    constraint foreign key (avatar_id) references avatar (avatar_id)
+);
+
 create table if not exists diary
 (
     active             tinyint(1)                           null,
@@ -87,20 +101,6 @@ create table if not exists diary
     kind               enum ('EMOTION', 'FREE', 'QUESTION') null,
     title              TEXT                      null,
     constraint foreign key (backup_id) references back_up (backup_id),
-    constraint foreign key (avatar_id) references avatar (avatar_id)
-);
-
-create table if not exists session_token
-(
-    active              tinyint(1)   null,
-    avatar_id           bigint       not null,
-    created_date        datetime(6)  null,
-    expired_date        datetime(6)  null,
-    session_token_id    bigint auto_increment
-        primary key,
-    device_id           varchar(255) null,
-    device_type         varchar(255) null,
-    session_token_vaule varchar(255) null,
     constraint foreign key (avatar_id) references avatar (avatar_id)
 );
 

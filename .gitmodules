@@ -1,0 +1,3 @@
+[submodule "cherish-config"]
+	path = cherish-config
+	url = https://github.com/App-Cherish/cherish-config

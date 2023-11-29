@@ -35,7 +35,8 @@ jobs:
       run: ls
     - name: pwd
       run: pwd
-    - name: cp ./cherish-config/resources ./backend/src/resource
+    - name: cp
+      run: cp ./cherish-config/resources ./backend/src/resource
 
 
   build:

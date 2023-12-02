@@ -34,9 +34,9 @@ jobs:
       run: ls
     - name: copy-config
       run: cp -r ./resources ../backend/src/resources
-    - name: cd
-      run: cd ../backend/src/resources
-    - name: ls
+    - name: change-directory
+      working-directory: ./backend/src/
+    - name: ls_check
       run: ls
     - name: pwd
       run: pwd

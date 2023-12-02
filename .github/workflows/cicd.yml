@@ -18,11 +18,10 @@ permissions:
 
 jobs:
   configuration:
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./cherish-config
-
-    runs-on: ubuntu-latest
 
     steps:
     - name: Set up actions

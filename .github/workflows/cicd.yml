@@ -16,7 +16,7 @@ jobs:
   ci:
     defaults:
       run:
-        working-directory: ./cherish-config
+        working-directory: ./backend
     runs-on: ubuntu-latest
     steps:
     - name: Set up actions
@@ -33,17 +33,9 @@ jobs:
     - name: check-config
       run: ls
     - name: copy-config
-      run: cp -r ./resources ../backend/src/resources
-    - name: change-directory
-      working-directory: ./backend/src/
-    - name: ls_check
-      run: ls
-    - name: pwd
-      run: pwd
-    - name: check
-      run : cd /home/runner/work/cherish-backend/cherish-backend/backend/
-    - name : ls
-      run : ls
+      run: cp -r ../cherish-config/resources ./src/resources
+    - name: ls
+      run: ls ./src/resources
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
     - name: Build with Gradle

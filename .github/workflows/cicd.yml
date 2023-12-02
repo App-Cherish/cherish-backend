@@ -41,7 +41,7 @@ jobs:
     - name: cp
       run: cp ./cherish-config/resources ./backend/src/resource
 
-  check-config:
+  configuration:
     defaults:
       run:
         working-directory: ./cherish-config
@@ -59,14 +59,14 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+    - name: check-config
+      run: ls
+    - name: copy-config
+      run: cp ./resources ../backend/src/resources
+    - name: cd
+      run: cd ../backend/src/resources
     - name: ls
       run: ls
-    - name: pwd
-      run: pwd
-    # - name: Grant execute permission for gradlew
-    #   run: chmod +x ./gradlew
-    # - name: Build with Gradle
-    #   run: ./gradlew clean build
     
   build:
     defaults:

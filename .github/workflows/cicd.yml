@@ -62,7 +62,7 @@ jobs:
     - name: check-config
       run: ls
     - name: copy-config
-      run: cp ./resources ../backend/src/resources
+      run: cp -r ./resources/ ../backend/src/resources/
     - name: cd
       run: cd ../backend/src/resources
     - name: ls

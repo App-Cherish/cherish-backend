@@ -12,7 +12,7 @@ on:
     branches: [ "cicd" ]
 permissions:
   contents: read
-
+ 
 env:
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_URI }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}

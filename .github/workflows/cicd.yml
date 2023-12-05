@@ -14,7 +14,7 @@ permissions:
   contents: read
  
 env:
-  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY_URI }}
+  ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
   IMAGE_TAG: ${{ github.sha }}
 
@@ -53,8 +53,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        aws-access-key-id: ${{secrets.AWS_ACCESS_KEY}}
-        aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}} 
+        aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}} 
         aws-region: ${{secrets.AWS_REGION}}
 
     - name: Login to Amazon ECR 

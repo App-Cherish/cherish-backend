@@ -16,6 +16,7 @@ public class SignUpRequest {
     private String gender;
     private String deviceId;
     private String deviceType;
+    private String accessToken;
 
     public SignUpRequest(String oauthId, String name, String platform, LocalDate birth, String gender, String deviceId, String deviceType) {
         this.oauthId = oauthId;

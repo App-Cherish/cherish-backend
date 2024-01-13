@@ -13,6 +13,7 @@ import com.cherish.backend.service.SessionTokenService;
 import com.cherish.backend.service.dto.LoginDto;
 import com.cherish.backend.service.dto.SignUpDto;
 import com.cherish.backend.service.dto.TokenCreateDto;
+import com.cherish.backend.util.SocialLoginValidationUtil;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.Schema;
 import com.epages.restdocs.apispec.SimpleType;
@@ -40,8 +41,7 @@ import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.docume
 import static com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.apispec.ResourceDocumentation.resource;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -75,6 +75,9 @@ public class AccountControllerDocs {
     @Autowired
     AvatarRepository avatarRepository;
 
+    @MockBean
+    SocialLoginValidationUtil validationUtil;
+
     @Autowired
     WebApplicationContext context;
 
@@ -92,8 +95,9 @@ public class AccountControllerDocs {
     public void loginDocsSuccess() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
-        given(sessionTokenService.createToken(anyLong(), any(TokenCreateDto.class))).willReturn(SessionToken.of("testdeviceId", "testType", any(Avatar.class)));
-        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "iphone1234","iphone15");
+        given(sessionTokenService.createToken(anyLong(), any(TokenCreateDto.class))).willReturn(SessionToken.of("testdeviceId", "testType", Avatar.of("name1,",LocalDate.of(1,1,1),Gender.FEMALE)));
+        doNothing().when(validationUtil).validation(anyString(),anyString(),anyString());
+        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasdasdas", "iphone1234", "iphone15");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -112,6 +116,7 @@ public class AccountControllerDocs {
                                 .requestFields(
                                         fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
                                         fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
+                                        fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
                                         fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
                                         fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
                                         )
@@ -124,8 +129,8 @@ public class AccountControllerDocs {
     public void loginDocsActivateSuccess() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willThrow(new LeaveAccountStoreException());
-        given(sessionTokenService.createToken(anyLong(), any(TokenCreateDto.class))).willReturn(SessionToken.of("testdeviceId", "testType", any(Avatar.class)));
-        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "iphone1234","iphone15");
+        given(sessionTokenService.createToken(anyLong(), any(TokenCreateDto.class))).willReturn(SessionToken.of("testdeviceId", "testType", Avatar.of("name1,",LocalDate.of(1,1,1),Gender.FEMALE)));
+        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasdasd", "iphone1234", "iphone15");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -144,6 +149,7 @@ public class AccountControllerDocs {
                                 .requestFields(
                                         fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
                                         fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
+                                        fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
                                         fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
                                         fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
                                 )
@@ -156,7 +162,7 @@ public class AccountControllerDocs {
     public void loginDocsFail1() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willThrow(new NotExistAccountException());
-        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "iphone15","iphone1234");
+        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasdasdas", "iphone15", "iphone1234");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -181,7 +187,7 @@ public class AccountControllerDocs {
     public void loginDocsPlatformFail1() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willThrow(new LeaveAccountStoreException());
-        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "iphone15", "iphone1234");
+        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasd", "iphone15", "iphone1234");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -375,7 +381,7 @@ public class AccountControllerDocs {
         session.setAttribute(ConstValue.sessionName,1L);
         given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
         given(sessionTokenService.createToken(anyLong(), any(TokenCreateDto.class))).willReturn(SessionToken.of("testdeviceId", "testType", null));
-        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasdasdasd","iphone15");
+        LoginRequest loginRequest = new LoginRequest("testId", "kakao", "asdasdasdasdas", "asdasdasdasdasd", "iphone15");
         //when
         //test
         mockMvc.perform(post("/api/account/activate")

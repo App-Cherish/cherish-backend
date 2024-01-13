@@ -2,10 +2,12 @@ package com.cherish.backend.controller;
 
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.domain.*;
+import com.cherish.backend.exception.WrongOauthIdException;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
 import com.cherish.backend.service.AccountService;
+import com.cherish.backend.util.SocialLoginValidationUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,9 +33,14 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,6 +75,9 @@ public class AccountControllerTest {
     @Autowired
     SessionTokenRepository sessionTokenRepository;
 
+    @MockBean
+    SocialLoginValidationUtil validationUtil;
+
 
     @BeforeEach
     void setUp() {
@@ -76,7 +85,6 @@ public class AccountControllerTest {
         httpSession = new MockHttpSession();
         given(clock.instant()).willReturn(Clock.systemDefaultZone().instant());
         given(clock.getZone()).willReturn(Clock.systemDefaultZone().getZone());
-
     }
 
     @AfterEach
@@ -97,6 +105,7 @@ public class AccountControllerTest {
                 "\"deviceId\" : \"iphoneId\"," +
                 "\"deviceType\": \"ihpone15\"}";
         //when
+        doNothing().when(validationUtil).validation(anyString(), anyString(), anyString());
         MvcResult mvcResult = mockMvc.perform(post("/api/account/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
@@ -120,8 +129,9 @@ public class AccountControllerTest {
         Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
 
         accountRepository.save(account);
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "asdasdasdasdas", "iphone1234", "iphon15");
         //when
+        doNothing().when(validationUtil).validation(anyString(), anyString(), anyString());
         //then
         MvcResult mvcResult = mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk()).andExpect(jsonPath("$.tokenId").exists()).andExpect(jsonPath("$.expiredTime").exists()).andReturn();
 
@@ -160,7 +170,7 @@ public class AccountControllerTest {
     public void loginAPIFailTest2() throws Exception {
         //given
         String testOauthId1 = "testOauthId3";
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphone15");
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "asdasdasdasdas", "iphone1234", "iphone15");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isNotFound());
@@ -230,7 +240,7 @@ public class AccountControllerTest {
 
         accountRepository.save(account);
 
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "apple", "iphone1234", "iphon15");
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "apple", "asdasdasdasdas", "iphone1234", "iphon15");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -249,7 +259,7 @@ public class AccountControllerTest {
 
         accountRepository.save(account);
 
-        LoginRequest loginRequest = new LoginRequest(UUID.randomUUID().toString(), "kakao", "iphone1234", "iphon15");
+        LoginRequest loginRequest = new LoginRequest(UUID.randomUUID().toString(), "kakao", "asdasdasdasdas", "iphone1234", "iphon15");
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -275,7 +285,7 @@ public class AccountControllerTest {
         //then
         accountService.leave(avatar.getId());
 
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "asdasdasdasdas", "iphone1234", "iphon15");
 
 
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -297,7 +307,7 @@ public class AccountControllerTest {
 
         accountService.leave(avatar.getId());
 
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "iphone1234", "iphon15");
+        LoginRequest loginRequest = new LoginRequest(testOauthId1, "kakao", "asdasdasdasdas", "iphone1234", "iphon15");
         //when
         Clock fixedClock = Clock.fixed(ZonedDateTime.now().minusDays(8).toInstant(), ZoneId.systemDefault());
         given(clock.instant()).willReturn(fixedClock.instant());
@@ -353,6 +363,30 @@ public class AccountControllerTest {
                 .andExpect(status().isOk());
 
         assertThrows(IllegalStateException.class, () -> httpSession.getAttribute(ConstValue.sessionName).toString());
+    }
+
+    @Test
+    @DisplayName("14. 회원 가입 시에 소셜로그인 서버와 ID와 요청으로 들어온 ID값이 다른 경우 상태코드 400을 출력한다.")
+    public void loginFailTestIfIdValueIsDiff() throws Exception {
+        //given
+
+        doThrow(WrongOauthIdException.class).when(validationUtil).validation(anyString(),anyString(),anyString());
+        String requestJson = "{\"oauthId\": \"testOauthId\"," +
+                "\"name\":\"testid\"," +
+                "\"platform\":\"kakao\"," +
+                "\"birth\": \"2022-10-23\"," +
+                "\"accessToken\": \"asdasdasdasd\"," +
+                "\"gender\" : \"male\", " +
+                "\"deviceId\" : \"iphoneId\"," +
+                "\"deviceType\": \"ihpone15\"}";
+        //when
+        mockMvc.perform(post("/api/account/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
     }
 
 

@@ -18,7 +18,7 @@ public class SignUpRequest {
     private String deviceType;
     private String accessToken;
 
-    public SignUpRequest(String oauthId, String name, String platform, LocalDate birth, String gender, String deviceId, String deviceType) {
+    public SignUpRequest(String oauthId, String name, String platform, LocalDate birth, String gender, String deviceId, String deviceType, String accessToken) {
         this.oauthId = oauthId;
         this.name = name;
         this.platform = platform;
@@ -26,5 +26,6 @@ public class SignUpRequest {
         this.gender = gender;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
+        this.accessToken = accessToken;
     }
 }

@@ -9,12 +9,14 @@ public class LoginRequest {
 
     private String oauthId;
     private String platform;
+    private String accessToken;
     private String deviceId;
     private String deviceType;
 
-    public LoginRequest(String oauthId, String platform, String deviceId, String deviceType) {
+    public LoginRequest(String oauthId, String platform, String accessToken, String deviceId, String deviceType) {
         this.oauthId = oauthId;
         this.platform = platform;
+        this.accessToken = accessToken;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
     }

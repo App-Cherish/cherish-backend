@@ -1,10 +1,8 @@
 package com.cherish.backend.controller;
 
 import com.cherish.backend.controller.argumentresolver.LoginAvatarId;
-import com.cherish.backend.controller.dto.request.AnotherLoginRequest;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.SignUpRequest;
-import com.cherish.backend.controller.dto.response.AnotherPlatformResponse;
 import com.cherish.backend.controller.dto.response.LoginResponse;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
@@ -12,10 +10,10 @@ import com.cherish.backend.domain.SessionToken;
 import com.cherish.backend.exception.NotFountTokenException;
 import com.cherish.backend.service.AccountService;
 import com.cherish.backend.service.SessionTokenService;
-import com.cherish.backend.service.dto.AnotherPlatformSignUpDto;
 import com.cherish.backend.service.dto.LoginDto;
 import com.cherish.backend.service.dto.SignUpDto;
 import com.cherish.backend.service.dto.TokenCreateDto;
+import com.cherish.backend.util.SocialLoginValidationUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +25,12 @@ public class AccountController {
 
     private final AccountService accountService;
     private final SessionTokenService sessionTokenService;
+    private final SocialLoginValidationUtil validationUtil;
+
 
     @PostMapping("/oauthlogin")
     public LoginResponse oauthLogin(@RequestBody LoginRequest request, HttpSession session) {
+        validationUtil.validation(request.getOauthId(), request.getAccessToken(), request.getPlatform());
         Long avatarId = accountService.oauthLogin(new LoginDto(request.getOauthId(), request.getDeviceType(), request.getDeviceId(), getPlatform(request.getPlatform())));
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(request.getDeviceId(), request.getDeviceType()));
         extractedSession(session, avatarId);
@@ -59,16 +60,14 @@ public class AccountController {
 
     @PostMapping("/signup")
     public LoginResponse signUp(@RequestBody SignUpRequest signUpRequest, HttpSession session) {
-
-        Platform platform = getPlatform(signUpRequest.getPlatform());
-        Gender gender = getGender(signUpRequest.getGender());
-
+        validationUtil.validation(signUpRequest.getOauthId(), signUpRequest.getAccessToken(), signUpRequest.getPlatform());
+        
         Long avatarId = accountService.signUp(new SignUpDto(
                 signUpRequest.getOauthId(),
-                platform,
+                getPlatform(signUpRequest.getPlatform()),
                 signUpRequest.getName(),
                 signUpRequest.getBirth(),
-                gender,
+                getGender(signUpRequest.getGender()),
                 signUpRequest.getDeviceId()));
 
         SessionToken token = sessionTokenService.createToken(avatarId, new TokenCreateDto(signUpRequest.getDeviceId(), signUpRequest.getDeviceType()));

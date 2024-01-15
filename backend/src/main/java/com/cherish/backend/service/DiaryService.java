@@ -1,5 +1,10 @@
 package com.cherish.backend.service;
 
+import com.cherish.backend.controller.dto.request.BackUpDiaryRequest;
+import com.cherish.backend.controller.dto.request.DiaryRequest;
+import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
+import com.cherish.backend.controller.dto.response.BackUpDairyResponse;
+import com.cherish.backend.controller.dto.response.DiaryResponse;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.BackUp;
 import com.cherish.backend.domain.Diary;
@@ -9,17 +14,13 @@ import com.cherish.backend.exception.NotExistBackUpException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.BackUpRepository;
 import com.cherish.backend.repositroy.DiaryRepository;
-import com.cherish.backend.service.dto.BackUpDto;
-import com.cherish.backend.service.dto.DiaryDto;
-import com.cherish.backend.service.dto.DiarySaveResponseDto;
-import com.cherish.backend.service.dto.FirstTimeBackUpDto;
+import com.cherish.backend.util.DateFormattingUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,50 +33,41 @@ public class DiaryService {
     private final BackUpRepository backUpRepository;
 
     @Transactional
-    public DiarySaveResponseDto firstTimeBackUp(FirstTimeBackUpDto firstTimeBackUpDto, Long avatarId) {
+    public BackUpDairyResponse firstTimeBackUp(FirstTimeBackUpDiaryRequest backUpDiaryRequest, Long avatarId) {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).orElseThrow(NotExistAvatarException::new);
 
         if (backUpRepository.ExistBackUpByAvatarId(avatarId)) {
             throw new ExistBackUpHistory();
         }
 
-        String id = createId();
-        BackUp backUp = saveBackUP(BackUp.of(id, firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDiaryDtos().size(), findAvatar));
-        List<Diary> createDiaryList = createDiaryList(firstTimeBackUpDto, findAvatar, backUp);
+        BackUp backUp = backUpRepository.save(BackUp.of(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUpDiaryRequest.getDiaryRequestList().size(), findAvatar));
+        List<Diary> createDiaryList = createDiaryList(backUpDiaryRequest, findAvatar, backUp);
         diaryRepository.saveAllAndFlush(createDiaryList);
 
-        return new DiarySaveResponseDto(firstTimeBackUpDto.getOsVersion(), firstTimeBackUpDto.getDeviceType(), backUp.getId(), createDiaryList.size(), backUp.getCreatedDate());
+        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate(), createDiaryList.size());
     }
 
     @Transactional
-    public DiarySaveResponseDto backUp(BackUpDto backUpDto, Long avatarId) {
+    public BackUpDairyResponse backUp(BackUpDiaryRequest backUpDiaryRequest, Long avatarId) {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).orElseThrow(NotExistAvatarException::new);
-        BackUp findBackUp = backUpRepository.findById(backUpDto.getBackUpId()).orElseThrow(NotExistBackUpException::new);
+        BackUp findBackUp = backUpRepository.findById(backUpDiaryRequest.getBackUpId()).orElseThrow(NotExistBackUpException::new);
+        BackUp backUp = backUpRepository.save(findBackUp.renew(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUpDiaryRequest.getDiaryRequestList().size()));
 
         findBackUp.deActive();
 
-        String id = createId();
-        BackUp backUp = saveBackUP(BackUp.of(id, backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUpDto.getDiaryDtos().size(), findAvatar));
-
-        for (DiaryDto diaryDto : backUpDto.getDiaryDtos()) {
-            if (diaryDto.getId() != null) {
-                Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryDto.getId(), avatarId);
+        for (DiaryRequest diaryRequest : backUpDiaryRequest.getDiaryRequestList()) {
+            if (diaryRequest.getId() != null) {
+                Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryRequest.getId(), avatarId);
                 diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
             }
         }
 
-        diaryRepository.saveAllAndFlush(createNewDiaryList(backUpDto, findAvatar, backUp));
+        diaryRepository.saveAllAndFlush(renewDiaryList(backUpDiaryRequest, findAvatar, backUp));
 
-        return new DiarySaveResponseDto(backUpDto.getOsVersion(), backUpDto.getDeviceType(), backUp.getId(), backUpDto.getDiaryDtos().size(), backUp.getCreatedDate());
+        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate(), backUp.getDiaryCount());
     }
 
-
-    @Transactional
-    public BackUp saveBackUP(BackUp backUp) {
-        return backUpRepository.save(backUp);
-    }
-
-    public List<DiaryDto> getRecentDiaryList(String backUpId, Long avatarId) {
+    public List<DiaryResponse> getRecentDiaryList(String backUpId, Long avatarId) {
         List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(backUpId, avatarId);
 
         if (findDiaryList.isEmpty()) {
@@ -83,35 +75,46 @@ public class DiaryService {
         }
 
         return findDiaryList.stream()
-                .map(d -> new DiaryDto(d.getId(),
-                        d.getKind(),
+                .map(d -> new DiaryResponse(
                         d.getTitle(),
                         d.getContent(),
-                        d.getWritingDate()
-                        , d.getDeviceId()
-                        , d.getDeviceType())).toList();
+                        d.getKind().getValue(),
+                        d.getWritingDate(),
+                        d.getDeviceType(),
+                        d.getDeviceId())
+                ).toList();
     }
 
-    private List<Diary> createDiaryList(FirstTimeBackUpDto firstTimeBackUpDto, Avatar avatar, BackUp backUp) {
-        return firstTimeBackUpDto.getDiaryDtos().stream().map(element ->
+    private List<Diary> createDiaryList(FirstTimeBackUpDiaryRequest backUpDiaryRequest, Avatar avatar, BackUp backUp) {
+
+        return backUpDiaryRequest.getDiaryRequestList().stream().map(element ->
                 Diary.of(
-                        element.getKind(), element.getTitle(), element.getContent(), element.getWritingDate(), firstTimeBackUpDto.getDeviceType(), firstTimeBackUpDto.getDeviceId(), avatar, backUp
+                        element.getKind(),
+                        element.getTitle(),
+                        element.getContent(),
+                        DateFormattingUtil.stringDateFormatToLocalDateTime(element.getDate()),
+                        backUpDiaryRequest.getDeviceType(),
+                        backUpDiaryRequest.getDeviceId(),
+                        avatar,
+                        backUp)).toList();
+    }
+
+
+    private List<Diary> renewDiaryList(BackUpDiaryRequest backUpDiaryRequest, Avatar avatar, BackUp backUp) {
+        return backUpDiaryRequest.getDiaryRequestList().stream().filter(d -> d.getId() == null).map(element ->
+                Diary.of(
+                        element.getKind(),
+                        element.getTitle(),
+                        element.getContent(),
+                        DateFormattingUtil.stringDateFormatToLocalDateTime(element.getDate()),
+                        backUpDiaryRequest.getDeviceType(),
+                        backUpDiaryRequest.getDeviceId(),
+                        avatar,
+                        backUp
                 )
         ).toList();
     }
 
-
-    private List<Diary> createNewDiaryList(BackUpDto backUpDto, Avatar avatar, BackUp backUp) {
-        return backUpDto.getDiaryDtos().stream().filter(d -> d.getId() == null).map(element ->
-                Diary.of(
-                        element.getKind(), element.getTitle(), element.getContent(), element.getWritingDate(), backUpDto.getDeviceType(), backUpDto.getDeviceId(), avatar, backUp
-                )
-        ).toList();
-    }
-
-    private String createId() {
-        return UUID.randomUUID().toString().split("-")[0];
-    }
 
 
 }

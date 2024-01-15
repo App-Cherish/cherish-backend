@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,10 +37,20 @@ public class BackUp extends BaseEntity {
     }
 
 
-    public static BackUp of(String id, String osVersion, String deviceType, int diaryCount, Avatar avatar) {
+    public static BackUp of(String osVersion, String deviceType, int diaryCount, Avatar avatar) {
         return BackUp.builder()
-                .id(id)
+                .id(UUID.randomUUID().toString().split("-")[0])
                 .avatar(avatar)
+                .osVersion(osVersion)
+                .deviceType(deviceType)
+                .diaryCount(diaryCount)
+                .build();
+    }
+
+    public BackUp renew(String osVersion, String deviceType, int diaryCount){
+        return BackUp.builder()
+                .id(UUID.randomUUID().toString().split("-")[0])
+                .avatar(this.avatar)
                 .osVersion(osVersion)
                 .deviceType(deviceType)
                 .diaryCount(diaryCount)

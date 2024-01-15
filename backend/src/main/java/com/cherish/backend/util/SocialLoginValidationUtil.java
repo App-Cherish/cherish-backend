@@ -18,11 +18,11 @@ public class SocialLoginValidationUtil {
 
     private final RestTemplate restTemplate;
 
-    public void validation(String code, String accessToken, String platform) {
-        if (platform.equals(Platform.KAKAO.getValue())) {
+    public void validation(String code, String accessToken, Platform platform) {
+        if (platform == Platform.KAKAO) {
             kakaoLoginValidation(code, kakaoLoginRequest(accessToken));
         }
-        if (platform.equals(Platform.APPLE.getValue())) {
+        if (platform == Platform.APPLE) {
             appleLoginValidation(code, accessToken);
         }
     }

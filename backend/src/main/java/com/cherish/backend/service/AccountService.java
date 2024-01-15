@@ -1,5 +1,7 @@
 package com.cherish.backend.service;
 
+import com.cherish.backend.controller.dto.request.LoginRequest;
+import com.cherish.backend.controller.dto.request.SignUpRequest;
 import com.cherish.backend.domain.Account;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.SessionToken;
@@ -7,8 +9,6 @@ import com.cherish.backend.exception.*;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
-import com.cherish.backend.service.dto.LoginDto;
-import com.cherish.backend.service.dto.SignUpDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +27,11 @@ public class AccountService {
     private final SessionTokenRepository sessionTokenRepository;
     private final Clock clock;
 
-    public Long oauthLogin(LoginDto loginDto) {
+    public Long oauthLogin(LoginRequest loginRequest) {
 
-        Account account = accountRepository.findAccountByOauthIdAndPlatform(loginDto.getOauthId(), loginDto.getPlatform()).orElseThrow(NotExistAccountException::new);
+        Account account = accountRepository
+                .findAccountByOauthIdAndPlatform(loginRequest.getOauthId(), loginRequest.getPlatform())
+                .orElseThrow(NotExistAccountException::new);
 
         if (account.getLastModifiedDate().isAfter(LocalDateTime.now(clock).plusDays(7L))) {
             accountRepository.delete(account);
@@ -41,28 +43,26 @@ public class AccountService {
         }
 
         return account.getAvatar().getId();
-
-
     }
 
     @Transactional
-    public Long signUp(SignUpDto signUpDto) {
+    public Long signUp(SignUpRequest signUpRequest) {
 
-        Optional<Account> findAccount = accountRepository.findAccountByOauthId(signUpDto.getOauthId());
+        Optional<Account> findAccount = accountRepository.findAccountByOauthId(signUpRequest.getOauthId());
 
         if (!findAccount.isEmpty()) {
             throw new ExistOauthIdException();
         }
 
         Avatar avatar = Avatar.of(
-                signUpDto.getName(),
-                signUpDto.getBirth(),
-                signUpDto.getGender()
+                signUpRequest.getName(),
+                signUpRequest.getBirth(),
+                signUpRequest.getGender()
         );
 
         Account account = Account.of(
-                signUpDto.getOauthId(),
-                signUpDto.getPlatform(),
+                signUpRequest.getOauthId(),
+                signUpRequest.getPlatform(),
                 avatar
         );
 

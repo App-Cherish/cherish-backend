@@ -18,7 +18,6 @@ public class BackUpController {
 
     @GetMapping
     public BackUpHistoryResponse loadRecentBackUpHistory(@LoginAvatarId Long avatarId) {
-        BackUp findBackUp = backUpService.getRecentBackUp(avatarId);
-        return new BackUpHistoryResponse(findBackUp.getId(), findBackUp.getOsVersion(), findBackUp.getDeviceType(), findBackUp.getDiaryCount(), findBackUp.getCreatedDate());
+        return backUpService.getRecentBackUp(avatarId);
     }
 }

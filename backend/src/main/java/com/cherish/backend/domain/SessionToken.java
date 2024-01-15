@@ -62,6 +62,18 @@ public class SessionToken {
                 .build();
     }
 
+    public static SessionToken renew(SessionToken sessionToken) {
+        return SessionToken.builder()
+                .sessionTokenVaule(UUID.randomUUID().toString())
+                .avatar(sessionToken.getAvatar())
+                .deviceId(sessionToken.getDeviceId())
+                .deviceType(sessionToken.getDeviceType())
+                .created_date(LocalDateTime.now())
+                .expired_date(LocalDateTime.now().plusDays(31L))
+                .active(1)
+                .build();
+    }
+
     public void deActive() {
         this.active = 0;
     }

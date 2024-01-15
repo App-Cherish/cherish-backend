@@ -116,7 +116,7 @@ class DiaryControllerTest {
     @DisplayName("[API][DIARY] 기존에 백업 기록이 존재하는 데 처음 백업하는 API 실패 테스트")
     public void firstTimeBackUpControllerFailTest() throws Exception {
         //given
-        BackUp backUp = BackUp.of("testId", "os1", "devicetype1", 2, avatar);
+        BackUp backUp = BackUp.of( "os1", "devicetype1", 2, avatar);
         Diary diary1 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
         Diary diary2 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
 
@@ -143,7 +143,7 @@ class DiaryControllerTest {
     @Test
     @DisplayName("[API][DIARY] 이미 백업기록이 존재하는 상태로 백업하는 API 테스트")
     public void backUpControllerTest() throws Exception {
-        BackUp backUp = BackUp.of("testId", "os1", "devicetype1", 2, avatar);
+        BackUp backUp = BackUp.of("os1", "devicetype1", 2, avatar);
         Diary diary1 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
         Diary diary2 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
 
@@ -182,7 +182,7 @@ class DiaryControllerTest {
     @DisplayName("만약 backUpController시에 세션 값이 잘못된 경우 상태코드 400을 출력한다.")
     public void backUpControllerFailTest1() throws Exception {
         //given
-        BackUp backUp = BackUp.of("testId", "os1", "devicetype1", 2, avatar);
+        BackUp backUp = BackUp.of("os1", "devicetype1", 2, avatar);
         Diary diary1 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
         Diary diary2 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
 
@@ -218,7 +218,7 @@ class DiaryControllerTest {
     @DisplayName("만약 backUpController시에 backup 값이 잘못된 경우 상태코드 400을 출력한다.")
     public void backUpControllerFailTest2() throws Exception {
         //given
-        BackUp backUp = BackUp.of("testId", "os1", "devicetype1", 2, avatar);
+        BackUp backUp = BackUp.of( "os1", "devicetype1", 2, avatar);
         Diary diary1 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
         Diary diary2 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
 
@@ -250,7 +250,7 @@ class DiaryControllerTest {
     @DisplayName("[API][DIARY] 가장 최근 일기 조회 테스트")
     public void getDiaryListByBackUpIdTest() throws Exception {
         //given
-        BackUp backUp = BackUp.of("testId", "os1", "devicetype1", 2, avatar);
+        BackUp backUp = BackUp.of( "os1", "devicetype1", 2, avatar);
         Diary diary1 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
         Diary diary2 = Diary.of(DiaryKind.FREE, "testtitle1", "testcontent", stringToLocalDateTime("2022-07-25 12:45:09 +0000"), "devicetype1", "device1", avatar, backUp);
 

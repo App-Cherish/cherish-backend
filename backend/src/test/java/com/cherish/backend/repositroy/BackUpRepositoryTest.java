@@ -39,11 +39,11 @@ class BackUpRepositoryTest {
     @DisplayName("여려개의 BackUp Entity가 존재하는 경우 제일 최신의 데이터만 추출한다.")
     public void findBackUpByIdLatestTest() throws Exception {
         //given
-        BackUp back1 = BackUp.of("testId1", "os1", "device1", 3, avatar);
+        BackUp back1 = BackUp.of("os1", "device1", 3, avatar);
         Thread.sleep(300);
-        BackUp back2 = BackUp.of("testId2", "os1", "device1", 3, avatar);
+        BackUp back2 = BackUp.of( "os1", "device1", 3, avatar);
         Thread.sleep(300);
-        BackUp back3 = BackUp.of("testId2", "os1", "device1", 3, avatar);
+        BackUp back3 = BackUp.of( "os1", "device1", 3, avatar);
         Thread.sleep(300);
 
         backUpRepository.save(back1);
@@ -67,7 +67,7 @@ class BackUpRepositoryTest {
     @DisplayName("만약 BackUP Entity가 존재하는 경우 true를 출력한다.")
     public void existBackUpByIdLatestTest() throws Exception {
         //given
-        BackUp back1 = BackUp.of("testId1", "os1", "device1", 3, avatar);
+        BackUp back1 = BackUp.of("os1", "device1", 3, avatar);
         backUpRepository.save(back1);
         //when
         //then

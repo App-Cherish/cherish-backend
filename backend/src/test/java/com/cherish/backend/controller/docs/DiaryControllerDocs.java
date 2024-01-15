@@ -4,14 +4,12 @@ import com.cherish.backend.controller.ConstValue;
 import com.cherish.backend.controller.dto.request.BackUpDiaryRequest;
 import com.cherish.backend.controller.dto.request.DiaryRequest;
 import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
+import com.cherish.backend.controller.dto.response.BackUpDairyResponse;
+import com.cherish.backend.controller.dto.response.DiaryResponse;
 import com.cherish.backend.domain.DiaryKind;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.service.BackUpService;
 import com.cherish.backend.service.DiaryService;
-import com.cherish.backend.service.dto.BackUpDto;
-import com.cherish.backend.service.dto.DiaryDto;
-import com.cherish.backend.service.dto.DiarySaveResponseDto;
-import com.cherish.backend.service.dto.FirstTimeBackUpDto;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.Schema;
 import com.epages.restdocs.apispec.SimpleType;
@@ -87,8 +85,8 @@ public class DiaryControllerDocs {
     @DisplayName("[DOCS]일기 처음 백업 기능 문서화")
     public void firstTimeBackUpDocsSuccessTest() throws Exception {
         //given
-        given(diaryService.firstTimeBackUp(any(FirstTimeBackUpDto.class), eq(1L)))
-                .willReturn(new DiarySaveResponseDto("os1", "iphone15", "backup1", 3, LocalDateTime.now()));
+        given(diaryService.firstTimeBackUp(any(FirstTimeBackUpDiaryRequest.class), eq(1L)))
+                .willReturn(new BackUpDairyResponse("os1", "iphone15", "backup1", LocalDateTime.now(),3));
 
         List<DiaryRequest> diaryRequests = new ArrayList<>();
         DiaryRequest diaryRequest1 = new DiaryRequest(null, DiaryKind.FREE, "testtitle1", "testcontent", "2022-07-25 12:45:09 +0000");
@@ -112,11 +110,11 @@ public class DiaryControllerDocs {
                                 .tag("DIARY API(Header에 로그인시 받은 SESSION 쿠키값이 항상 입력이 되있어야 합니다!)")
                                 .summary("기존에 백업 기록 없이 처음으로 백업하는 경우")
                                 .requestFields(
-                                        fieldWithPath("diary[].id").type("String").description("서버에서 발급받은 id를 입력해주세요. 만약 처음 업로드 하는 경우 json 포맷안에 포함하지 않아도 됩니다."),
-                                        fieldWithPath("diary[].title").type("String").description("기기에서 입력한 제목을 입력해주세요."),
-                                        fieldWithPath("diary[].content").type("String").description("기기에서 입력한 일기의 내용을 입력해주세요."),
-                                        fieldWithPath("diary[].date").type("String").description("기기에서 일기가 작성된 date를 입력해주세요. (yyyy-mm-dd hh:mm:ss +SSSS) \n ex) 2023-12-13 23:13:10 +1409"),
-                                        fieldWithPath("diary[].kind").type("String").description("일기의 종류를 입력해주세요, 만약 포함이 되지않는 일기의 종류가 있다면 오류를 뱉어냅니다. (허용되는 종류 : 감정형식,자유형식,질문형식)"),
+                                        fieldWithPath("diaryRequestList[].id").type("String").description("서버에서 발급받은 id를 입력해주세요. 만약 처음 업로드 하는 경우 null로 입력해주세요.."),
+                                        fieldWithPath("diaryRequestList[].title").type("String").description("기기에서 입력한 제목을 입력해주세요."),
+                                        fieldWithPath("diaryRequestList[].content").type("String").description("기기에서 입력한 일기의 내용을 입력해주세요."),
+                                        fieldWithPath("diaryRequestList[].date").type("String").description("기기에서 일기가 작성된 date를 입력해주세요. (yyyy-mm-dd hh:mm:ss +SSSS) \n ex) 2023-12-13 23:13:10 +1409"),
+                                        fieldWithPath("diaryRequestList[].kind").type("String").description("일기의 종류를 입력해주세요, 만약 포함이 되지않는 일기의 종류가 있다면 오류를 뱉어냅니다. (허용되는 종류 : 감정형식,자유형식,질문형식)"),
                                         fieldWithPath("deviceType").type("String").description("기기의 종류를 입력해주세요."),
                                         fieldWithPath("deviceId").type("String").description("기기의 고유값을 입력해주세요."),
                                         fieldWithPath("osVersion").type("String").description("기기의 os버전을 입력해주세요.")
@@ -129,8 +127,8 @@ public class DiaryControllerDocs {
     @DisplayName("[DOCS]일기 백업 기능(두번째이상) 문서화")
     public void backUpDocsSuccessTest() throws Exception {
         //given
-        given(diaryService.backUp(any(BackUpDto.class), eq(1L)))
-                .willReturn(new DiarySaveResponseDto("os1", "iphone150", "asdasdas22", 2, LocalDateTime.now()));
+        given(diaryService.backUp(any(BackUpDiaryRequest.class),eq(1L)))
+                .willReturn(new BackUpDairyResponse("os1", "iphone150", "asdasdas22", LocalDateTime.now(),2));
 
         List<DiaryRequest> diaryRequests = new ArrayList<>();
         DiaryRequest diaryRequest1 = new DiaryRequest("asdasdasd", DiaryKind.FREE, "testtitle1", "testcontent", "2022-07-25 12:45:09 +0000");
@@ -155,11 +153,11 @@ public class DiaryControllerDocs {
                                 .tag("DIARY API(Header에 로그인시 받은 SESSION 쿠키값이 항상 입력이 되있어야 합니다!)")
                                 .summary("기존에 백업이 존재하는 상태에서 백업하는 경우")
                                 .requestFields(
-                                        fieldWithPath("diary[].id").type("String").description("서버에서 발급받은 id를 입력해주세요. 만약 처음 업로드 하는 경우 json 포맷안에 포함하지 않아도 됩니다."),
-                                        fieldWithPath("diary[].title").type("String").description("기기에서 입력한 제목을 입력해주세요."),
-                                        fieldWithPath("diary[].content").type("String").description("기기에서 입력한 일기의 내용을 입력해주세요."),
-                                        fieldWithPath("diary[].date").type("String").description("기기에서 일기가 작성된 date를 입력해주세요. (yyyy-mm-dd hh:mm:ss +SSSS) \n ex) 2023-12-13 23:13:10 +1409"),
-                                        fieldWithPath("diary[].kind").type("String").description("일기의 종류를 입력해주세요, 만약 포함이 되지않는 일기의 종류가 있다면 오류를 뱉어냅니다. (허용되는 종류 : 감정형식,자유형식,질문형식)"),
+                                        fieldWithPath("diaryRequestList[].id").type("String").description("서버에서 발급받은 id를 입력해주세요. 만약 처음 업로드 하는 경우 json 포맷안에 포함하지 않아도 됩니다."),
+                                        fieldWithPath("diaryRequestList[].title").type("String").description("기기에서 입력한 제목을 입력해주세요."),
+                                        fieldWithPath("diaryRequestList[].content").type("String").description("기기에서 입력한 일기의 내용을 입력해주세요."),
+                                        fieldWithPath("diaryRequestList[].date").type("String").description("기기에서 일기가 작성된 date를 입력해주세요. (yyyy-mm-dd hh:mm:ss +SSSS) \n ex) 2023-12-13 23:13:10 +1409"),
+                                        fieldWithPath("diaryRequestList[].kind").type("String").description("일기의 종류를 입력해주세요, 만약 포함이 되지않는 일기의 종류가 있다면 오류를 뱉어냅니다. (허용되는 종류 : 감정형식,자유형식,질문형식)"),
                                         fieldWithPath("deviceType").type("String").description("기기의 종류를 입력해주세요."),
                                         fieldWithPath("deviceId").type("String").description("기기의 고유값을 입력해주세요."),
                                         fieldWithPath("osVersion").type("String").description("기기의 os버전을 입력해주세요."),
@@ -173,10 +171,10 @@ public class DiaryControllerDocs {
     @DisplayName("[DOCS][DIARY] 저장되어있는 일기 목록 불러오기")
     public void getDiaryListByBackUpIdList() throws Exception {
         //given
-        List<DiaryDto> diaryDtos = new ArrayList<>();
-        diaryDtos.add(new DiaryDto("id1", DiaryKind.FREE, "title1", "content1", LocalDateTime.now(), "device1", "devicetype1"));
-        diaryDtos.add(new DiaryDto("id2", DiaryKind.EMOTION, "title2", "content2", LocalDateTime.now(), "device2", "devicetype2"));
-        diaryDtos.add(new DiaryDto("id3", DiaryKind.QUESTION, "title3", "content3", LocalDateTime.now(), "device3", "devicetype3"));
+        List<DiaryResponse> diaryDtos = new ArrayList<>();
+        diaryDtos.add(new DiaryResponse("id1", "title1", "content1", LocalDateTime.now(), "device1", "devicetype1"));
+        diaryDtos.add(new DiaryResponse("id2", "title2", "content2", LocalDateTime.now(), "device2", "devicetype2"));
+        diaryDtos.add(new DiaryResponse("id3", "title3", "content3", LocalDateTime.now(), "device3", "devicetype3"));
 
         given(diaryService.getRecentDiaryList(anyString(), eq(1L)))
                 .willReturn(diaryDtos);

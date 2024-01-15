@@ -35,7 +35,7 @@ class DiaryRepositoryTest {
     @BeforeEach
     public void init() {
         avatar = Avatar.of("name1", LocalDate.now(), Gender.MALE);
-        backUp = BackUp.of("backup1","os1","device1",3,avatar);
+        backUp = BackUp.of("os1","device1",3,avatar);
 
         avatarRepository.save(avatar);
         backUpRepository.save(backUp);

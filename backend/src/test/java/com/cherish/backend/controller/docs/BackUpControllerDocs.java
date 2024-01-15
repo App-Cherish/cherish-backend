@@ -71,7 +71,7 @@ public class BackUpControllerDocs {
         //given
         Avatar avatar = Avatar.of("name1", LocalDate.now(), Gender.MALE);
         avatarRepository.save(avatar);
-        BackUp backUp = BackUp.of("asdasd", "os1", "device1", 3, avatar);
+        BackUp backUp = BackUp.of("os1", "device1", 3, avatar);
         backUpRepository.save(backUp);
 
         //when

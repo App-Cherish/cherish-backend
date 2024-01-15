@@ -9,13 +9,13 @@ import java.util.List;
 @NoArgsConstructor
 public class FirstTimeBackUpDiaryRequest {
 
-    List<DiaryRequest> diary;
+    List<DiaryRequest> diaryRequestList;
     String deviceType;
     String deviceId;
     String osVersion;
 
-    public FirstTimeBackUpDiaryRequest(List<DiaryRequest> diary, String deviceType, String deviceId, String osVersion) {
-        this.diary = diary;
+    public FirstTimeBackUpDiaryRequest(List<DiaryRequest> diaryRequestList, String deviceType, String deviceId, String osVersion) {
+        this.diaryRequestList = diaryRequestList;
         this.deviceType = deviceType;
         this.deviceId = deviceId;
         this.osVersion = osVersion;

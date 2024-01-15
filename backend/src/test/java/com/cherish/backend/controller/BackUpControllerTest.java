@@ -80,7 +80,7 @@ class BackUpControllerTest {
     @DisplayName("정상적인 최신 백업 기록을 요청한 경우 백업한 기록이 존재하면 백업 기록을 출력해준다.")
     public void getRecentBackUpAPITest() throws Exception {
         //given
-        BackUp backUp = BackUp.of("asdasd","os1","device1",3,avatar);
+        BackUp backUp = BackUp.of("os1","device1",3,avatar);
         backUpRepository.save(backUp);
         //when
         //then

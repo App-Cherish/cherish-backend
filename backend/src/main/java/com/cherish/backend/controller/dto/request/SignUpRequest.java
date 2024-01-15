@@ -1,5 +1,7 @@
 package com.cherish.backend.controller.dto.request;
 
+import com.cherish.backend.domain.Gender;
+import com.cherish.backend.domain.Platform;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,14 +13,14 @@ public class SignUpRequest {
 
     private String oauthId;
     private String name;
-    private String platform;
+    private Platform platform;
     private LocalDate birth;
-    private String gender;
+    private Gender gender;
     private String deviceId;
     private String deviceType;
     private String accessToken;
 
-    public SignUpRequest(String oauthId, String name, String platform, LocalDate birth, String gender, String deviceId, String deviceType, String accessToken) {
+    public SignUpRequest(String oauthId, String name, Platform platform, LocalDate birth, Gender gender, String deviceId, String deviceType, String accessToken) {
         this.oauthId = oauthId;
         this.name = name;
         this.platform = platform;

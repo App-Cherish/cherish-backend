@@ -1,12 +1,14 @@
 package com.cherish.backend.service;
 
+import com.cherish.backend.controller.dto.request.TokenLoginRequest;
+import com.cherish.backend.controller.dto.response.LoginResponse;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.SessionToken;
 import com.cherish.backend.exception.OverExpiredDateException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
-import com.cherish.backend.service.dto.TokenCreateDto;
+import com.cherish.backend.service.dto.CreateTokenDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,36 +59,33 @@ class SessionTokenServiceTest {
     @DisplayName("1.avatarId와 기기와 관련된 정보를 이용해 token을 정상적으로 생성한다.")
     public void createTokenTest() throws Exception {
         //given
-        SessionToken createToken = sessionTokenService.createToken(avatar.getId(), new TokenCreateDto("asd1234", "type1"));
+        LoginResponse createTokenResponse = sessionTokenService.createToken(new CreateTokenDto("asd1234", "type1", avatar.getId()));
         //when
-        Optional<SessionToken> findToken = sessionTokenRepository.findSessionTokenBySessionTokenValue(createToken.getSessionTokenVaule());
+        Optional<SessionToken> findToken = sessionTokenRepository.findSessionTokenBySessionTokenValue(createTokenResponse.getTokenId());
         //then
-        assertThat(findToken.get().getSessionTokenVaule()).isEqualTo(createToken.getSessionTokenVaule());
-        assertThat(findToken.get().getId()).isEqualTo(createToken.getId());
+        assertThat(findToken.get().getSessionTokenVaule()).isEqualTo(createTokenResponse.getTokenId());
     }
 
     @Test
     @DisplayName("2.tokenSessionValue를 이용해 토큰 로그인 시도 시에 토큰을 정상적으로 생성한다.")
     public void tokenLoginTest() throws Exception {
         //given
-        SessionToken createToken = sessionTokenService.tokenLogin(sessionToken.getSessionTokenVaule());
+        LoginResponse response = sessionTokenService.tokenLogin(new TokenLoginRequest(sessionToken.getSessionTokenVaule()));
         //when
-        Optional<SessionToken> findToken = sessionTokenRepository.findSessionTokenBySessionTokenValue(createToken.getSessionTokenVaule());
+        Optional<SessionToken> findToken = sessionTokenRepository.findSessionTokenBySessionTokenValue(response.getTokenId());
         //then
-        assertThat(findToken.get().getSessionTokenVaule()).isEqualTo(createToken.getSessionTokenVaule());
-        assertThat(findToken.get().getId()).isEqualTo(createToken.getId());
+        assertThat(findToken.get().getSessionTokenVaule()).isEqualTo(response.getTokenId());
     }
 
     @Test
     @DisplayName("3.tokenSessionValue를 통해  토큰 로그인 시도 시에 기존의 세션은 비활성화 된다.")
     public void tokenLoginDeActiveTest() throws Exception {
         //given
-
-        SessionToken createToken = sessionTokenService.tokenLogin(sessionToken.getSessionTokenVaule());
+        LoginResponse response = sessionTokenService.tokenLogin(new TokenLoginRequest(sessionToken.getSessionTokenVaule()));
         //when
         //then
         assertThat(sessionToken.getActive()).isEqualTo(0);
-        assertThat(createToken.getSessionTokenVaule()).isNotEqualTo(sessionToken.getSessionTokenVaule());
+        assertThat(response.getTokenId()).isNotEqualTo(sessionToken.getSessionTokenVaule());
 
     }
 
@@ -118,7 +117,7 @@ class SessionTokenServiceTest {
         given(clock.getZone()).willReturn(fixedClock.getZone());
         //when
         //then
-        assertThrows(OverExpiredDateException.class,()->sessionTokenService.tokenLogin(sessionToken.getSessionTokenVaule()));
+        assertThrows(OverExpiredDateException.class,()->sessionTokenService.tokenLogin(new TokenLoginRequest(sessionToken.getSessionTokenVaule())));
     }
 
     @Test

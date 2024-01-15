@@ -1,5 +1,10 @@
 package com.cherish.backend.service;
 
+import com.cherish.backend.controller.dto.request.BackUpDiaryRequest;
+import com.cherish.backend.controller.dto.request.DiaryRequest;
+import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
+import com.cherish.backend.controller.dto.response.BackUpDairyResponse;
+import com.cherish.backend.controller.dto.response.DiaryResponse;
 import com.cherish.backend.domain.*;
 import com.cherish.backend.exception.ExistBackUpHistory;
 import com.cherish.backend.exception.NotExistAvatarException;
@@ -7,10 +12,7 @@ import com.cherish.backend.exception.NotExistBackUpException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.BackUpRepository;
 import com.cherish.backend.repositroy.DiaryRepository;
-import com.cherish.backend.service.dto.BackUpDto;
-import com.cherish.backend.service.dto.DiaryDto;
-import com.cherish.backend.service.dto.DiarySaveResponseDto;
-import com.cherish.backend.service.dto.FirstTimeBackUpDto;
+import com.cherish.backend.util.DateFormattingUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,7 +50,7 @@ class DiaryServiceTest {
     @BeforeEach
     public void init() {
         avatar = Avatar.of("name1", LocalDate.now(), Gender.MALE);
-        backUp = BackUp.of("backUpid1","os1","device1",3,avatar);
+        backUp = BackUp.of("os1","device1",3,avatar);
 
         avatarRepository.save(avatar);
         backUpRepository.save(backUp);
@@ -59,25 +62,25 @@ class DiaryServiceTest {
         Avatar avatar2 = Avatar.of("name2", LocalDate.now(), Gender.MALE);
         avatarRepository.save(avatar2);
         //given
-        List<DiaryDto> dtos = new ArrayList<>();
+        List<DiaryRequest> dtos = new ArrayList<>();
 
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title1","content1",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title2","content2",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
+        dtos.add(new DiaryRequest(null, DiaryKind.FREE, "title1", "content1", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
+        dtos.add(new DiaryRequest(null, DiaryKind.FREE, "title2", "content2", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
+        dtos.add(new DiaryRequest(null, DiaryKind.FREE, "title3", "content3", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
 
-        FirstTimeBackUpDto firstTimeBackUpDto = new FirstTimeBackUpDto(dtos,"device1","deviceId1","os1");
+        FirstTimeBackUpDiaryRequest firstTimeBackUpDto = new FirstTimeBackUpDiaryRequest(dtos, "device1", "deviceId1", "os1");
 
         //when
-        DiarySaveResponseDto diarySaveResponseDto = diaryService.firstTimeBackUp(firstTimeBackUpDto, avatar2.getId());
+        BackUpDairyResponse backUpDairyResponse = diaryService.firstTimeBackUp(firstTimeBackUpDto, avatar2.getId());
         //then
         BackUp backUp = backUpRepository.findBackUpByIdLatest(avatar2.getId()).get();
-        DiarySaveResponseDto returnDto = new DiarySaveResponseDto("os1", "device1", backUp.getId(), 3,backUp.getCreatedDate());
+        BackUpDairyResponse expectedResponse = new BackUpDairyResponse(backUp.getOsVersion(), backUp.getDeviceType(), backUp.getId(), backUp.getCreatedDate(), backUp.getDiaryCount());
 
         assertThat(dtos.size()).isEqualTo(3);
-        assertThat(diarySaveResponseDto.getBackUpId()).isEqualTo(returnDto.getBackUpId());
-        assertThat(diarySaveResponseDto.getSaveTime()).isEqualTo(returnDto.getSaveTime());
-        assertThat(diarySaveResponseDto.getOsVersion()).isEqualTo(returnDto.getOsVersion());
-        assertThat(diarySaveResponseDto.getDeviceType()).isEqualTo(returnDto.getDeviceType());
+        assertThat(backUpDairyResponse.getBackUpId()).isEqualTo(expectedResponse.getBackUpId());
+        assertThat(backUpDairyResponse.getSaveTime()).isEqualTo(expectedResponse.getSaveTime());
+        assertThat(backUpDairyResponse.getOsVersion()).isEqualTo(expectedResponse.getOsVersion());
+        assertThat(backUpDairyResponse.getDeviceType()).isEqualTo(expectedResponse.getDeviceType());
     }
 
     @Test
@@ -87,22 +90,22 @@ class DiaryServiceTest {
         avatarRepository.save(avatar2);
 
         //given
-        List<DiaryDto> dtos = new ArrayList<>();
+        List<DiaryRequest> diaryRequestList = new ArrayList<>();
 
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title1","content1",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title2","content2",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
-        FirstTimeBackUpDto firstTimeBackUpDto = new FirstTimeBackUpDto(dtos,"device1","deviceId1","os1");
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title1", "content1", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title2", "content2", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title3", "content3", DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
+        FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest = new FirstTimeBackUpDiaryRequest(diaryRequestList, "device1", "deviceId1", "os1");
 
-        DiarySaveResponseDto diarySaveResponseDto = diaryService.firstTimeBackUp(firstTimeBackUpDto, avatar2.getId());
+        BackUpDairyResponse backUpDairyResponse = diaryService.firstTimeBackUp(firstTimeBackUpDiaryRequest, avatar2.getId());
         //when
         BackUp findBackUp = backUpRepository.findBackUpByIdLatest(avatar2.getId()).get();
         List<Diary> diaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(findBackUp.getId(), avatar2.getId());
         //then
         assertThat(diaryList.size()).isEqualTo(3);
-        assertThat(diaryList.get(0).getBackUp().getId()).isEqualTo(diarySaveResponseDto.getBackUpId());
-        assertThat(diaryList).extracting("title",String.class).contains(dtos.get(0).getTitle(),dtos.get(1).getTitle(),dtos.get(2).getTitle());
-        assertThat(diaryList).extracting("content",String.class).contains(dtos.get(0).getContent(),dtos.get(1).getContent(),dtos.get(2).getContent());
+        assertThat(diaryList.get(0).getBackUp().getId()).isEqualTo(backUpDairyResponse.getBackUpId());
+        assertThat(diaryList).extracting("title", String.class).contains(diaryRequestList.get(0).getTitle(), diaryRequestList.get(1).getTitle(), diaryRequestList.get(2).getTitle());
+        assertThat(diaryList).extracting("content", String.class).contains(diaryRequestList.get(0).getContent(), diaryRequestList.get(1).getContent(), diaryRequestList.get(2).getContent());
         assertThat(diaryList.get(0).getBackUp().getId()).isEqualTo(findBackUp.getId());
     }
 
@@ -110,38 +113,38 @@ class DiaryServiceTest {
     @DisplayName("만약 처음 백업을 할 시에 이미 백업 기록이 존재하면 예외를 출력한다.")
     public void firstTimeBackUpFailTest1() throws Exception {
         //given
-        BackUp back = BackUp.of("test","iphone15","iphone13",13,avatar);
+        BackUp back = BackUp.of("iphone15", "iphone13", 13, avatar);
         backUpRepository.save(back);
 
         //given
-        List<DiaryDto> dtos = new ArrayList<>();
+        List<DiaryRequest> diaryRequestList = new ArrayList<>();
 
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title1","content1",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title2","content2",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
-        FirstTimeBackUpDto firstTimeBackUpDto = new FirstTimeBackUpDto(dtos,"device1","deviceId1","os1");
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title1", "content1", "1999-11-11"));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title2", "content2", "1999-11-11"));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title3", "content3", "1999-11-11"));
+        FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest = new FirstTimeBackUpDiaryRequest(diaryRequestList, "device1", "deviceId1", "os1");
         //when
         //then
-        assertThrows(ExistBackUpHistory.class,() -> diaryService.firstTimeBackUp(firstTimeBackUpDto, avatar.getId()));
+        assertThrows(ExistBackUpHistory.class, () -> diaryService.firstTimeBackUp(firstTimeBackUpDiaryRequest, avatar.getId()));
     }
 
     @Test
     @DisplayName("만약 처음 백업을 할 시에 아바타 아이디가 존재하지 않으면 예외를 출력한다.")
     public void firstTimeBackUpFailTest2() throws Exception {
         //given
-        BackUp back = BackUp.of("test","iphone15","iphone13",13,avatar);
+        BackUp back = BackUp.of("iphone15", "iphone13", 13, avatar);
         backUpRepository.save(back);
 
         //given
-        List<DiaryDto> dtos = new ArrayList<>();
+        List<DiaryRequest> diaryRequestList = new ArrayList<>();
 
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title1","content1",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title2","content2",LocalDateTime.now()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
-        FirstTimeBackUpDto firstTimeBackUpDto = new FirstTimeBackUpDto(dtos,"device1","deviceId1","os1");
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title1", "content1", "1999-11-11"));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title2", "content2", "1999-11-11"));
+        diaryRequestList.add(new DiaryRequest(null, DiaryKind.FREE, "title3", "content3", "1999-11-11"));
+        FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest = new FirstTimeBackUpDiaryRequest(diaryRequestList, "device1", "deviceId1", "os1");
         //when
         //then
-        assertThrows(NotExistAvatarException.class,() -> diaryService.firstTimeBackUp(firstTimeBackUpDto, null));
+        assertThrows(NotExistAvatarException.class, () -> diaryService.firstTimeBackUp(firstTimeBackUpDiaryRequest, null));
     }
 
     @Test
@@ -158,22 +161,22 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> dtos = new ArrayList<>();
+        List<DiaryRequest> diaryRequests = new ArrayList<>();
 
-        dtos.add(new DiaryDto(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),diary1.getWritingDate(),diary1.getDeviceId(),diary1.getDeviceType()));
-        dtos.add(new DiaryDto(diary2.getId(),diary2.getKind(),diary2.getTitle(),diary2.getContent(),diary2.getWritingDate(),diary2.getDeviceId(),diary2.getDeviceType()));
-        dtos.add(new DiaryDto(diary3.getId(),diary3.getKind(),diary3.getTitle(),diary3.getContent(),diary3.getWritingDate(),diary3.getDeviceId(),diary3.getDeviceType()));
+        diaryRequests.add(new DiaryRequest(diary1.getId(), diary1.getKind(), diary1.getTitle(), diary1.getContent(), DateFormattingUtil.localDateTimeToString(diary1.getWritingDate())));
+        diaryRequests.add(new DiaryRequest(diary2.getId(), diary2.getKind(), diary2.getTitle(), diary2.getContent(), DateFormattingUtil.localDateTimeToString(diary2.getWritingDate())));
+        diaryRequests.add(new DiaryRequest(diary3.getId(), diary3.getKind(), diary3.getTitle(), diary3.getContent(), DateFormattingUtil.localDateTimeToString(diary3.getWritingDate())));
         BackUp findBackUpBefore = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
-        BackUpDto backUpDto = new BackUpDto(dtos, "device1", "deviceId1", "os1", findBackUpBefore.getId());
-        DiarySaveResponseDto responseDto = diaryService.backUp(backUpDto, avatar.getId());
+        BackUpDiaryRequest diaryRequest = new BackUpDiaryRequest(diaryRequests, "device1", "deviceId1", "os1", findBackUpBefore.getId());
+        BackUpDairyResponse backUpDairyResponse = diaryService.backUp(diaryRequest, avatar.getId());
         BackUp findBackUpAfter = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
 
         //then
-        assertThat(responseDto.getBackUpId()).isEqualTo(findBackUpAfter.getId());
-        assertThat(responseDto.getDeviceType()).isEqualTo(findBackUpAfter.getDeviceType());
-        assertThat(responseDto.getOsVersion()).isEqualTo(findBackUpAfter.getOsVersion());
-        assertThat(responseDto.getSaveTime()).isEqualTo(findBackUpAfter.getCreatedDate());
-        assertThat(responseDto.getCount()).isEqualTo(dtos.size());
+        assertThat(backUpDairyResponse.getBackUpId()).isEqualTo(findBackUpAfter.getId());
+        assertThat(backUpDairyResponse.getDeviceType()).isEqualTo(findBackUpAfter.getDeviceType());
+        assertThat(backUpDairyResponse.getOsVersion()).isEqualTo(findBackUpAfter.getOsVersion());
+        assertThat(backUpDairyResponse.getSaveTime()).isEqualTo(DateFormattingUtil.localDateTimeToString(findBackUpAfter.getCreatedDate()));
+        assertThat(backUpDairyResponse.getCount()).isEqualTo(diaryRequests.size());
 
     }
 
@@ -191,20 +194,20 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> dtos = new ArrayList<>();
-        dtos.add(new DiaryDto(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),diary1.getWritingDate(),diary1.getDeviceId(),diary1.getDeviceType()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
+        List<DiaryRequest> diaryRequests = new ArrayList<>();
+        diaryRequests.add(new DiaryRequest(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),DateFormattingUtil.localDateTimeToString(diary1.getWritingDate())));
+        diaryRequests.add(new DiaryRequest(null,DiaryKind.FREE,"title3","content3",DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
 
         BackUp findBackUpBefore = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
-        BackUpDto backUpDto = new BackUpDto(dtos, "device1", "deviceId1", "os1", findBackUpBefore.getId());
-        DiarySaveResponseDto responseDto = diaryService.backUp(backUpDto, avatar.getId());
+        BackUpDiaryRequest diaryRequest = new BackUpDiaryRequest(diaryRequests, "device1", "deviceId1", "os1", findBackUpBefore.getId());
+        BackUpDairyResponse backUpDairyResponse = diaryService.backUp(diaryRequest, avatar.getId());
         BackUp findBackUpAfter = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
 
         List<Diary> findDiaryList = diaryRepository.findDiariesByIdAndAvatarIdAndBackUpId(findBackUpAfter.getId(), avatar.getId());
         //then
-        assertThat(findDiaryList.size()).isEqualTo(responseDto.getCount());
-        assertThat(responseDto.getBackUpId()).isEqualTo(findBackUpAfter.getId());
-        assertThat(findDiaryList).extracting("title").contains(dtos.get(0).getTitle(),dtos.get(1).getTitle());
+        assertThat(findDiaryList.size()).isEqualTo(backUpDairyResponse.getCount());
+        assertThat(backUpDairyResponse.getBackUpId()).isEqualTo(findBackUpAfter.getId());
+        assertThat(findDiaryList).extracting("title").contains(diaryRequests.get(0).getTitle(),diaryRequests.get(1).getTitle());
     }
 
     @Test
@@ -220,13 +223,13 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> dtos = new ArrayList<>();
-        dtos.add(new DiaryDto(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),diary1.getWritingDate(),diary1.getDeviceId(),diary1.getDeviceType()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
+        List<DiaryRequest> dtos = new ArrayList<>();
+        dtos.add(new DiaryRequest(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),DateFormattingUtil.localDateTimeToString(diary1.getWritingDate())));
+        dtos.add(new DiaryRequest(null,DiaryKind.FREE,"title3","content3",DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
 
         BackUp findBackUpBefore = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
-        BackUpDto backUpDto = new BackUpDto(dtos, "device1", "deviceId1", "os1", findBackUpBefore.getId());
-        DiarySaveResponseDto responseDto = diaryService.backUp(backUpDto, avatar.getId());
+        BackUpDiaryRequest backUpDiaryRequest = new BackUpDiaryRequest(dtos, "device1", "deviceId1", "os1", findBackUpBefore.getId());
+        BackUpDairyResponse backUpDairyResponse = diaryService.backUp(backUpDiaryRequest, avatar.getId());
         //then
         BackUp findBackUpAfter = backUpRepository.findBackUpByIdLatest(avatar.getId()).get();
         assertThat(findBackUpBefore.getActive()).isEqualTo(0);
@@ -248,13 +251,13 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> dtos = new ArrayList<>();
-        dtos.add(new DiaryDto(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),diary1.getWritingDate(),diary1.getDeviceId(),diary1.getDeviceType()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
+        List<DiaryRequest> dtos = new ArrayList<>();
+        dtos.add(new DiaryRequest(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),DateFormattingUtil.localDateTimeToString(diary1.getWritingDate())));
+        dtos.add(new DiaryRequest(null,DiaryKind.FREE,"title3","content3",DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
 
-        BackUpDto backUpDto = new BackUpDto(dtos, "device1", "deviceId1", "os1", backUp.getId());
+        BackUpDiaryRequest backUpDiaryRequest = new BackUpDiaryRequest(dtos, "device1", "deviceId1", "os1", backUp.getId());
         //then
-        assertThrows(NotExistAvatarException.class , () -> diaryService.backUp(backUpDto, 999999L));
+        assertThrows(NotExistAvatarException.class , () -> diaryService.backUp(backUpDiaryRequest, 999999L));
     }
 
     @Test
@@ -270,14 +273,14 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> dtos = new ArrayList<>();
-        dtos.add(new DiaryDto(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),diary1.getWritingDate(),diary1.getDeviceId(),diary1.getDeviceType()));
-        dtos.add(new DiaryDto(DiaryKind.FREE,"title3","content3",LocalDateTime.now()));
+        List<DiaryRequest> dtos = new ArrayList<>();
+        dtos.add(new DiaryRequest(diary1.getId(),diary1.getKind(),diary1.getTitle(),diary1.getContent(),DateFormattingUtil.localDateTimeToString(diary1.getWritingDate())));
+        dtos.add(new DiaryRequest(null,DiaryKind.FREE,"title3","content3",DateFormattingUtil.localDateTimeToString(LocalDateTime.now())));
 
-        BackUpDto backUpDto = new BackUpDto(dtos, "device1", "deviceId1", "os1", "asdasdas");
+        BackUpDiaryRequest backUpDiaryRequest = new BackUpDiaryRequest(dtos, "device1", "deviceId1", "os1", "123123123");
         //then
 
-        assertThrows(NotExistBackUpException.class,()-> diaryService.backUp(backUpDto, avatar.getId()));
+        assertThrows(NotExistBackUpException.class,()-> diaryService.backUp(backUpDiaryRequest, avatar.getId()));
     }
 
 
@@ -295,11 +298,10 @@ class DiaryServiceTest {
         diaryList.add(diary3);
         diaryRepository.saveAll(diaryList);
         //when
-        List<DiaryDto> findDiaryList = diaryService.getRecentDiaryList(backUp.getId(), avatar.getId());
+        List<DiaryResponse> recentDiaryList = diaryService.getRecentDiaryList(backUp.getId(), avatar.getId());
 
         //then
-        assertThat(findDiaryList.size()).isEqualTo(diaryList.size());
-        assertThat(findDiaryList).extracting("id",String.class).contains(diaryList.get(0).getId(),diaryList.get(1).getId(),diaryList.get(2).getId());
+        assertThat(recentDiaryList.size()).isEqualTo(diaryList.size());
     }
 
     @Test

@@ -2,6 +2,8 @@ package com.cherish.backend.util;
 
 import com.cherish.backend.domain.Platform;
 import com.cherish.backend.exception.WrongOauthIdException;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -40,6 +42,7 @@ public class SocialLoginValidationUtil {
 
         ResponseEntity<KakaoValidationResponseDTO> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity(headers), KakaoValidationResponseDTO.class);
+
         return response.getBody().getId();
     }
 
@@ -47,15 +50,14 @@ public class SocialLoginValidationUtil {
 
     }
 
+}
 
-    class KakaoValidationResponseDTO {
-        private String id;
-        private String expires_in;
-        private String app_id;
-
-        public String getId() {
-            return id;
-        }
-    }
-
+@Getter
+@NoArgsConstructor
+class KakaoValidationResponseDTO {
+    private String id;
+    private String expires_in;
+    private String app_id;
+    private String appId;
+    private String expiresInMillis;
 }

@@ -14,6 +14,7 @@ import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.Schema;
 import com.epages.restdocs.apispec.SimpleType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jdk.swing.interop.SwingInterOpUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(RestDocumentationExtension.class)
@@ -78,8 +80,56 @@ public class DiaryControllerDocs {
         session = new MockHttpSession();
 
         session.setAttribute(ConstValue.sessionName, 1L);
-
     }
+
+    private String firstTimeBackUpDiaryRequestToString(FirstTimeBackUpDiaryRequest request) {
+        List<String> list = request.getDiaryRequestList().stream().map(req -> diaryRequestToString(req))
+                .toList();
+
+        String json = "{\"diaryRequestList\" : [";
+
+        for(int i=0;i<list.size();i++){
+            if(i==list.size()-1) {
+                json += diaryRequestToString(request.getDiaryRequestList().get(i)) + "],";
+                break;
+            }
+            json += diaryRequestToString(request.getDiaryRequestList().get(i)) + ",";
+        }
+        return json + "\"deviceType\":\""+request.getDeviceType()+"\"," +
+                "\"deviceId\":\""+request.getDeviceId()+"\"," +
+                "\"osVersion\":\""+request.getOsVersion()+"\"}";
+    }
+
+    private String backUpDiaryRequestToString(BackUpDiaryRequest request) {
+        List<String> list = request.getDiaryRequestList().stream().map(req -> diaryRequestToString(req))
+                .toList();
+
+        String json = "{\"diaryRequestList\" : [";
+
+        for(int i=0;i<list.size();i++){
+            if(i==list.size()-1) {
+                json += diaryRequestToString(request.getDiaryRequestList().get(i)) + "],";
+                break;
+            }
+            json += diaryRequestToString(request.getDiaryRequestList().get(i)) + ",";
+        }
+        return json + "\"deviceType\":\""+request.getDeviceType()+"\"," +
+                "\"deviceId\":\""+request.getDeviceId()+"\"," +
+                "\"osVersion\":\""+request.getOsVersion()+"\"," +
+                "\"backUpId\":\""+request.getBackUpId()+"\"" +
+                "}";
+    }
+
+    private String diaryRequestToString(DiaryRequest diaryRequest) {
+        return "{" +
+                "\"id\":\""+diaryRequest.getId()+"\"," +
+                "\"kind\":\"" + diaryRequest.getKind().getValue() + "\"," +
+                "\"title\":\""+diaryRequest.getTitle()+"\"," +
+                "\"content\":\""+diaryRequest.getContent()+"\"," +
+                "\"date\":\""+diaryRequest.getDate()+"\"" +
+                "}";
+    }
+
 
     @Test
     @DisplayName("[DOCS]일기 처음 백업 기능 문서화")
@@ -95,13 +145,17 @@ public class DiaryControllerDocs {
         diaryRequests.add(diaryRequest2);
 
         FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest = new FirstTimeBackUpDiaryRequest(diaryRequests, "device1", "deviceId1", "os1");
+
+
+        String json = firstTimeBackUpDiaryRequestToString(firstTimeBackUpDiaryRequest);
         //when
         //then
         mockMvc.perform(post("/api/diary/firsttimebackup")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(firstTimeBackUpDiaryRequest))
+                        .content(json)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("diaryFirstBackUp",
                         preprocessRequest(prettyPrint()),
@@ -137,14 +191,16 @@ public class DiaryControllerDocs {
         diaryRequests.add(diaryRequest2);
 
         BackUpDiaryRequest backUpDiaryRequest = new BackUpDiaryRequest(diaryRequests, "device1", "deviceId1", "os1", "newBackUpID");
-
+        String json = backUpDiaryRequestToString(backUpDiaryRequest);
+        System.out.println(json);
         //when
         //then
         mockMvc.perform(post("/api/diary/backup")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(backUpDiaryRequest))
+                        .content(json)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("diaryBackUpRequest",
                         preprocessRequest(prettyPrint()),

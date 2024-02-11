@@ -135,6 +135,8 @@ public class AccountControllerDocs {
         //given
         given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(LeaveAccountStoreException.class);
         String request = "{\"oauthId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
@@ -167,13 +169,15 @@ public class AccountControllerDocs {
         //given
         given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(NotExistAccountException.class);
         String request = "{\"oauthId\":\"testOauthIdnone\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+
         //when
         //then
         mockMvc.perform(post("/api/account/oauthlogin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request)
                 )
-                .andExpect(status().isNotFound())
+                .andExpect(status().isMultipleChoices())
                 .andDo(document("oauth 실패하는 경우 - 입력한 OAuth ID가 없는 경우, 플랫폼이 다른 경우",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -192,6 +196,7 @@ public class AccountControllerDocs {
         //given
         given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(new LeaveAccountStoreException());
         String request = "{\"oauthId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
 
         //when
         //then
@@ -272,16 +277,21 @@ public class AccountControllerDocs {
                 "\"birth\": \"2022-10-23\"," +
                 "\"gender\" : \"male\", " +
                 "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"}";
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\": \"카카오에서 발급받은 아이디\"" +
+                "}";
 
         given(accountService.signUp(any(SignUpRequest.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse(sessionToken.getSessionTokenVaule(), sessionToken.getExpired_date()));
+        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+
         //when
         //then
         mockMvc.perform(post("/api/account/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("회원가입 성공",
                         preprocessRequest(prettyPrint()),
@@ -299,7 +309,9 @@ public class AccountControllerDocs {
                                                         fieldWithPath("birth").type("String").description("사용자의 생일을 넣어주세요 (yyyy-mm-dd) ex)1970-12-31"),
                                                         fieldWithPath("gender").type("String").description("성별을 넣어주세요(mail or female : 소문자 입니다.)"),
                                                         fieldWithPath("deviceId").type("String").description("deviceId를 입력해주세요."),
-                                                        fieldWithPath("deviceType").type("String").description("deviceType을 입력해주세요."))
+                                                        fieldWithPath("deviceType").type("String").description("deviceType을 입력해주세요."),
+                                                        fieldWithPath("accessToken").type("String").description("oauth로그인 서버에서 받은 id값을 입력해주세요.")
+                                                )
                                                 .build())));
     }
 
@@ -394,13 +406,20 @@ public class AccountControllerDocs {
         session.setAttribute(ConstValue.sessionName,1L);
         given(accountService.oauthLogin(any(LoginRequest.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse("asdasdasd", LocalDateTime.now()));
-        String request = "{\"testId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
-
+        String requestJson = "{\"oauthId\": \"" + "test1234" + "\"," +
+                "\"name\":\"testid\"," +
+                "\"platform\":\"kakao\"," +
+                "\"birth\": \"2022-10-23\"," +
+                "\"gender\" : \"male\", " +
+                "\"deviceId\" : \"iphoneId\"," +
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\": \"카카오에서 발급받은 아이디\"" +
+                "}";
         //when
         //test
         mockMvc.perform(post("/api/account/activate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request))
+                        .content(requestJson))
                 .andExpect(status().isOk())
                 .andDo(document("회원탈퇴 된 계정을 복구",
                         preprocessRequest(prettyPrint()),

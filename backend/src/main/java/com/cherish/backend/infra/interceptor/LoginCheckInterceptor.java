@@ -1,7 +1,7 @@
 package com.cherish.backend.infra.interceptor;
 
 import com.cherish.backend.controller.ConstValue;
-import com.cherish.backend.exception.NotFoundSessionException;
+import com.cherish.backend.exception.NotExistSessionException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -19,7 +19,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
 
         if(session == null || session.getAttribute(ConstValue.sessionName )==null) {
             log.info("request url : {} {}",request.getRequestURI(),request.getSession().getAttribute(ConstValue.sessionName));
-            throw new NotFoundSessionException();
+            throw new NotExistSessionException();
         }
 
         return true;

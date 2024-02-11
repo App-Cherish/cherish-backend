@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
@@ -82,6 +81,64 @@ class DiaryControllerTest {
         httpSession.clearAttributes();
     }
 
+    private String firstTimeBackUpDiaryRequestToString(FirstTimeBackUpDiaryRequest request) {
+        List<String> list = request.getDiaryRequestList().stream().map(req -> diaryRequestToString(req))
+                .toList();
+
+        String json = "{\"diaryRequestList\" : [";
+
+        for (int i = 0; i < list.size(); i++) {
+            if (i == list.size() - 1) {
+                json += diaryRequestToString(request.getDiaryRequestList().get(i)) + "],";
+                break;
+            }
+            json += diaryRequestToString(request.getDiaryRequestList().get(i)) + ",";
+        }
+        return json + "\"deviceType\":\"" + request.getDeviceType() + "\"," +
+                "\"deviceId\":\"" + request.getDeviceId() + "\"," +
+                "\"osVersion\":\"" + request.getOsVersion() + "\"}";
+    }
+
+    private String backUpDiaryRequestToString(BackUpDiaryRequest request) {
+        List<String> list = request.getDiaryRequestList().stream().map(req -> diaryRequestToString(req))
+                .toList();
+
+        String json = "{\"diaryRequestList\" : [";
+
+        for (int i = 0; i < list.size(); i++) {
+            if (i == list.size() - 1) {
+                json += diaryRequestToString(request.getDiaryRequestList().get(i)) + "],";
+                break;
+            }
+            json += diaryRequestToString(request.getDiaryRequestList().get(i)) + ",";
+        }
+        return json + "\"deviceType\":\"" + request.getDeviceType() + "\"," +
+                "\"deviceId\":\"" + request.getDeviceId() + "\"," +
+                "\"osVersion\":\"" + request.getOsVersion() + "\"," +
+                "\"backUpId\":\"" + request.getBackUpId() + "\"" +
+                "}";
+    }
+
+    private String diaryRequestToString(DiaryRequest diaryRequest) {
+
+        if (diaryRequest.equals("null")) {
+            return "{" +
+                    "\"kind\":\"" + diaryRequest.getKind().getValue() + "\"," +
+                    "\"title\":\"" + diaryRequest.getTitle() + "\"," +
+                    "\"content\":\"" + diaryRequest.getContent() + "\"," +
+                    "\"date\":\"" + diaryRequest.getDate() + "\"" +
+                    "}";
+        } else {
+            return "{" +
+                    "\"id\":\"" + diaryRequest.getId() + "\"," +
+                    "\"kind\":\"" + diaryRequest.getKind().getValue() + "\"," +
+                    "\"title\":\"" + diaryRequest.getTitle() + "\"," +
+                    "\"content\":\"" + diaryRequest.getContent() + "\"," +
+                    "\"date\":\"" + diaryRequest.getDate() + "\"" +
+                    "}";
+        }
+    }
+
 
     @Test
     @DisplayName("[API][DIARY] 처음 백업하는 API 성공 테스트")
@@ -97,8 +154,10 @@ class DiaryControllerTest {
         //then
         mockMvc.perform(post("/api/diary/firsttimebackup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)).session(httpSession)
+                        .content(firstTimeBackUpDiaryRequestToString(request))
+                        .session(httpSession)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.deviceType").exists())
                 .andExpect(jsonPath("$.backUpId").exists())
@@ -133,9 +192,12 @@ class DiaryControllerTest {
         FirstTimeBackUpDiaryRequest request = new FirstTimeBackUpDiaryRequest(diaryRequests, "device1", "deviceId1", "osVersion");
         //when
         //then
+
+
         mockMvc.perform(post("/api/diary/firsttimebackup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)).session(httpSession)
+                        .content(firstTimeBackUpDiaryRequestToString(request))
+                        .session(httpSession)
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -168,7 +230,7 @@ class DiaryControllerTest {
         //then
         mockMvc.perform(post("/api/diary/backup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(backUpDiaryRequest))
+                        .content(backUpDiaryRequestToString(backUpDiaryRequest))
                         .session(httpSession))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.deviceType").exists())
@@ -179,7 +241,7 @@ class DiaryControllerTest {
     }
 
     @Test
-    @DisplayName("만약 backUpController시에 세션 값이 잘못된 경우 상태코드 400을 출력한다.")
+    @DisplayName("만약 backUpController시에 세션 값이 잘못된 경우 상태코드 300 출력한다.")
     public void backUpControllerFailTest1() throws Exception {
         //given
         BackUp backUp = BackUp.of("os1", "devicetype1", 2, avatar);
@@ -209,13 +271,13 @@ class DiaryControllerTest {
         //then
         mockMvc.perform(post("/api/diary/backup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(backUpDiaryRequest))
+                        .content(backUpDiaryRequestToString(backUpDiaryRequest))
                         .session(httpSession))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isMultipleChoices());
     }
 
     @Test
-    @DisplayName("만약 backUpController시에 backup 값이 잘못된 경우 상태코드 400을 출력한다.")
+    @DisplayName("만약 backUpController시에 backup 값이 잘못된 경우 상태코드 404을 출력한다.")
     public void backUpControllerFailTest2() throws Exception {
         //given
         BackUp backUp = BackUp.of( "os1", "devicetype1", 2, avatar);
@@ -241,9 +303,9 @@ class DiaryControllerTest {
         //then
         mockMvc.perform(post("/api/diary/backup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(backUpDiaryRequest))
+                        .content(backUpDiaryRequestToString(backUpDiaryRequest))
                         .session(httpSession))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -267,7 +329,7 @@ class DiaryControllerTest {
     }
 
     @Test
-    @DisplayName("[API][DIARY] 가장 최근 일기 조회 할때 백업 아이디가 존재하지 않으면 상태코드 400을 출력한다.")
+    @DisplayName("[API][DIARY] 가장 최근 일기 조회 할때 백업 아이디가 존재하지 않으면 상태코드 404을 출력한다.")
     public void getDiaryListByBackUpIdFailTest() throws Exception {
         //given
         //when
@@ -275,6 +337,6 @@ class DiaryControllerTest {
         mockMvc.perform(get("/api/diary?id=")
                         .session(httpSession)
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

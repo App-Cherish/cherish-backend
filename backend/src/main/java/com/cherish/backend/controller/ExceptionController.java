@@ -2,7 +2,7 @@ package com.cherish.backend.controller;
 
 import com.cherish.backend.controller.dto.response.CommonErrorResponse;
 import com.cherish.backend.controller.dto.response.CommonValidationError;
-import com.cherish.backend.exception.*;
+import com.cherish.backend.exception.base.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -16,7 +16,7 @@ public class ExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public CommonValidationError notBlankRequestHandler(BindException e) {
+    public CommonValidationError validationExceptionHandler(BindException e) {
         CommonValidationError errorResponse = new CommonValidationError("400", "잘못된 요청 입니다.");
 
         for (FieldError error : e.getFieldErrors()) {
@@ -27,38 +27,32 @@ public class ExceptionController {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(Exception.class)
-    public CommonErrorResponse commonExceptionHandler(Exception e) {
-        return new CommonErrorResponse("400", e.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NotExistAccountException.class)
-    public CommonErrorResponse notExistAccountExceptionHandler(Exception e) {
-        return new CommonErrorResponse("404", e.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(NotFountTokenException.class)
-    public CommonErrorResponse notFountTokenExceptionHandler(Exception e) {
-        return new CommonErrorResponse("404", e.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ExistOauthIdException.class)
-    public CommonErrorResponse existOauthIdExceptionHandler(Exception e) {
+    @ExceptionHandler(ExistBaseException.class)
+    public CommonErrorResponse existBaseExceptionHandler(Exception e) {
         return new CommonErrorResponse("400", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler(NotFoundSessionException.class)
-    public CommonErrorResponse notFountSessionExceptionHandler(Exception e) {
+    @ExceptionHandler(ConvertTypeBaseException.class)
+    public CommonErrorResponse notConvertTypeException(Exception e) {
+        return new CommonErrorResponse("400", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(ForbiddenAccessBaseException.class)
+    public CommonErrorResponse forbiddenAccessBaseException(Exception e) {
         return new CommonErrorResponse("403", e.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NotExistBaseException.class)
+    public CommonErrorResponse notExistBaseExceptionHandler(Exception e) {
+        return new CommonErrorResponse("404", e.getMessage());
+    }
+
     @ResponseStatus(HttpStatus.MULTIPLE_CHOICES)
-    @ExceptionHandler(LeaveAccountStoreException.class)
-    public CommonErrorResponse leaveAccountStoreException(Exception e) {
+    @ExceptionHandler(RedirectBaseException.class)
+    public CommonErrorResponse redirectBaseExceptionHandler(Exception e) {
         return new CommonErrorResponse("300", e.getMessage());
     }
 }

@@ -107,7 +107,7 @@ class BackUpControllerTest {
                         .session(httpSession)
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").exists())
                 .andExpect(jsonPath("$.message").exists());
     }

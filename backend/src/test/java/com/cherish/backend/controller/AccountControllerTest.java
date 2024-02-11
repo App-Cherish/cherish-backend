@@ -3,7 +3,7 @@ package com.cherish.backend.controller;
 import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.TokenLoginRequest;
 import com.cherish.backend.domain.*;
-import com.cherish.backend.exception.WrongOauthIdException;
+import com.cherish.backend.exception.SocialLoginValidationException;
 import com.cherish.backend.repositroy.AccountRepository;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
@@ -30,7 +30,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -98,19 +97,22 @@ public class AccountControllerTest {
     @DisplayName("1.정상적인 회원가입을 수행한 경우 http status 200과 세션과 바디에 토큰을 출력한다. ")
     public void signUpAPISuccessTest() throws Exception {
         //given
-        String requestJson = "{\"oauthId\": \"testOauthId\"," +
+        String requestJson =
+                "{\"oauthId\": \"testOauthId\"," +
                 "\"name\":\"testid\"," +
                 "\"platform\":\"kakao\"," +
                 "\"birth\": \"2022-10-23\"," +
                 "\"gender\" : \"male\", " +
                 "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"}";
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\" : \"asdasdasdas\"}";
         //when
         doNothing().when(validationUtil).validation(anyString(), anyString(), any());
         MvcResult mvcResult = mockMvc.perform(post("/api/account/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenId").exists())
                 .andExpect(jsonPath("$.expiredTime").exists())
@@ -165,7 +167,8 @@ public class AccountControllerTest {
                 "\"birth\": \"2022-10-23\"," +
                 "\"gender\" : \"male\", " +
                 "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"}";
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\" : \"asdasdasdas\"}";
         //when
         mockMvc.perform(post("/api/account/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -176,13 +179,20 @@ public class AccountControllerTest {
 
 
     @Test
-    @DisplayName("4.oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 404코드를 출력한다.")
+    @DisplayName("4.oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 300코드를 출력한다.")
     public void loginAPIFailTest2() throws Exception {
         //given
-        String request = "{\"oauthId\":\"testOauthId3\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        String requestJson = "{\"oauthId\": \"test1234\"," +
+                "\"name\":\"testid\"," +
+                "\"platform\":\"kakao\"," +
+                "\"birth\": \"2022-10-23\"," +
+                "\"gender\" : \"male\", " +
+                "\"deviceId\" : \"iphoneId\"," +
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\" : \"asdasdasdas\"}";
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(request)).andExpect(status().isNotFound());
+        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(requestJson)).andExpect(status().isMultipleChoices());
     }
 
 
@@ -226,7 +236,7 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("7.토큰 로그인 시도시에 파라미터 값으로 들어온 토큰이 존재하지만 서버 내부에서 비 활성화된 토큰인 경우 상태코드 400을 출력한다.")
+    @DisplayName("7.토큰 로그인 시도시에 파라미터 값으로 들어온 토큰이 존재하지만 서버 내부에서 비 활성화된 토큰인 경우 상태코드 404를 출력한다.")
     public void tokenLoginFailTest2() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -244,13 +254,13 @@ public class AccountControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(tokenLoginRequest))
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
     }
 
 
     @Test
-    @DisplayName("8.oauth 로그인 시에 정상적인 요청이 들어왔으나 OauthID는 일치하나 플랫폼이 일치하지 않는 경우 상태코드 404를 출력한다.")
+    @DisplayName("8.oauth 로그인 시에 정상적인 요청이 들어왔으나 OauthID는 일치하나 플랫폼이 일치하지 않는 경우 상태코드 300을 출력한다.")
     public void oauthLoginFailTest3() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -265,11 +275,11 @@ public class AccountControllerTest {
         mockMvc.perform(post("/api/account/oauthlogin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request)
-                ).andExpect(status().isNotFound());
+                ).andExpect(status().isMultipleChoices());
     }
 
     @Test
-    @DisplayName("9.oauth 로그인 시에 정상적인 요청이 들어왔으나 플랫폼은 일치하나 oauthID가 일치하지 않는 경우 상태코드 404를 출력한다.")
+    @DisplayName("9.oauth 로그인 시에 정상적인 요청이 들어왔으나 플랫폼은 일치하나 oauthID가 일치하지 않는 경우 상태코드 300를 출력한다.")
     public void oauthLoginFailTest4() throws Exception {
         //given
         String testOauthId1 = "testOauthId1";
@@ -285,7 +295,7 @@ public class AccountControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request)
                 )
-                .andExpect(status().isNotFound());
+                .andExpect(status().isMultipleChoices());
     }
 
 
@@ -337,7 +347,7 @@ public class AccountControllerTest {
 
         mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON)
                 .content(request))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isMultipleChoices());
     }
 
 
@@ -393,22 +403,22 @@ public class AccountControllerTest {
     public void loginFailTestIfIdValueIsDiff() throws Exception {
         //given
 
-        doThrow(WrongOauthIdException.class).when(validationUtil).validation(anyString(), anyString(), any());
-        String requestJson = "{\"oauthId\": \"testOauthId\"," +
+        doThrow(SocialLoginValidationException.class).when(validationUtil).validation(anyString(), anyString(), any());
+        String requestJson = "{\"oauthId\": \"test1234\"," +
                 "\"name\":\"testid\"," +
                 "\"platform\":\"kakao\"," +
                 "\"birth\": \"2022-10-23\"," +
-                "\"accessToken\": \"asdasdasdasd\"," +
                 "\"gender\" : \"male\", " +
                 "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"}";
+                "\"deviceType\": \"ihpone15\"," +
+                "\"accessToken\" : \"asdasdasdas\"}";
         //when
         mockMvc.perform(post("/api/account/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
     }
 

@@ -1,11 +1,11 @@
 package com.cherish.backend.service;
 
 import com.cherish.backend.controller.ConstValue;
-import com.cherish.backend.controller.dto.request.LoginRequest;
 import com.cherish.backend.controller.dto.request.TokenLoginRequest;
 import com.cherish.backend.controller.dto.response.LoginResponse;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.SessionToken;
+import com.cherish.backend.exception.NotExistTokenException;
 import com.cherish.backend.exception.OverExpiredDateException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.repositroy.SessionTokenRepository;
@@ -51,7 +51,7 @@ public class SessionTokenService {
     public LoginResponse tokenLogin(TokenLoginRequest tokenLoginRequest) {
         SessionToken findToken = tokenRepository
                 .findSessionTokenBySessionTokenValue(tokenLoginRequest.getToken())
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 토큰입니다."));
+                .orElseThrow(NotExistTokenException::new);
 
 
         if (findToken.getExpired_date().isBefore(LocalDateTime.now(clock))) {

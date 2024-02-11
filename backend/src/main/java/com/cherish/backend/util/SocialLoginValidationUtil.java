@@ -1,7 +1,7 @@
 package com.cherish.backend.util;
 
 import com.cherish.backend.domain.Platform;
-import com.cherish.backend.exception.WrongOauthIdException;
+import com.cherish.backend.exception.SocialLoginValidationException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class SocialLoginValidationUtil {
 
     private void kakaoLoginValidation(String code, String validationCode) {
         if (!code.equals(validationCode)) {
-            throw new WrongOauthIdException();
+            throw new SocialLoginValidationException();
         }
     }
 

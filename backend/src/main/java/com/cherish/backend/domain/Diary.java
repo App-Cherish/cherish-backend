@@ -24,6 +24,9 @@ public class Diary extends BaseEntity {
     private DiaryKind kind;
 
     @Column
+    private LocalDateTime clientCreatedDate;
+
+    @Column
     private String title;
 
     @Column(nullable = false)
@@ -35,9 +38,6 @@ public class Diary extends BaseEntity {
     @Column(nullable = false)
     private String deviceType;
 
-    @Column(nullable = false)
-    private String deviceId;
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
@@ -47,27 +47,26 @@ public class Diary extends BaseEntity {
     private BackUp backUp;
 
     @Builder
-    private Diary(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
-        this.id = createId();
+    private Diary(DiaryKind kind, LocalDateTime clientCreatedDate, String title, String content, LocalDateTime writingDate, String deviceType, Avatar avatar, BackUp backUp) {
         this.kind = kind;
+        this.clientCreatedDate = clientCreatedDate;
         this.title = title;
         this.content = content;
         this.writingDate = writingDate;
         this.deviceType = deviceType;
-        this.deviceId = deviceId;
         this.avatar = avatar;
         this.backUp = backUp;
     }
 
-    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
+    public static Diary of(DiaryKind kind,LocalDateTime clientCreatedDate,String title, String content, LocalDateTime writingDate, String deviceType, Avatar avatar, BackUp backUp) {
         return Diary.builder()
                 .avatar(avatar)
                 .kind(kind)
                 .title(title)
+                .clientCreatedDate(clientCreatedDate)
                 .content(content)
                 .writingDate(writingDate)
                 .deviceType(deviceType)
-                .deviceId(deviceId)
                 .backUp(backUp)
                 .build();
     }

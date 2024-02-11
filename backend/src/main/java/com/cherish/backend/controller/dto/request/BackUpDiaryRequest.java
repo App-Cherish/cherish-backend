@@ -1,5 +1,7 @@
 package com.cherish.backend.controller.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,10 +11,15 @@ import java.util.List;
 @NoArgsConstructor
 public class BackUpDiaryRequest {
 
+    @NotEmpty
     List<DiaryRequest> diaryRequestList;
+    @NotNull
     String deviceType;
+    @NotNull
     String deviceId;
+    @NotNull
     String osVersion;
+    @NotNull
     String backUpId;
 
     public BackUpDiaryRequest(List<DiaryRequest> diary, String deviceType, String deviceId, String osVersion, String backUpId) {

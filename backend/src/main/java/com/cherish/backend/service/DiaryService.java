@@ -56,7 +56,7 @@ public class DiaryService {
         findBackUp.deActive();
 
         for (DiaryRequest diaryRequest : backUpDiaryRequest.getDiaryRequestList()) {
-            if (diaryRequest.getId() != null) {
+            if (!diaryRequest.getId().isEmpty()) {
                 Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryRequest.getId(), avatarId);
                 diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
             }

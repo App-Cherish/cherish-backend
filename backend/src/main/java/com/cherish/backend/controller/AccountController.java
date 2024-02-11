@@ -10,6 +10,7 @@ import com.cherish.backend.service.SessionTokenService;
 import com.cherish.backend.service.dto.CreateTokenDto;
 import com.cherish.backend.util.SocialLoginValidationUtil;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,26 +25,26 @@ public class AccountController {
 
 
     @PostMapping("/oauthlogin")
-    public LoginResponse oauthLogin(@RequestBody LoginRequest loginRequest) {
+    public LoginResponse oauthLogin(@RequestBody @Valid LoginRequest loginRequest) {
         validationUtil.validation(loginRequest.getOauthId(), loginRequest.getAccessToken(), loginRequest.getPlatform());
         Long avatarId = accountService.oauthLogin(loginRequest);
         return sessionTokenService.createToken(loginRequest.toTokenDto(avatarId));
     }
 
     @PostMapping("/tokenlogin")
-    public LoginResponse tokenLogin(@RequestBody TokenLoginRequest tokenLoginRequest) {
+    public LoginResponse tokenLogin(@RequestBody @Valid TokenLoginRequest tokenLoginRequest) {
         return sessionTokenService.tokenLogin(tokenLoginRequest);
     }
 
     @PostMapping("/activate")
-    public LoginResponse activate(@RequestBody LoginRequest loginRequest) {
+    public LoginResponse activate(@RequestBody @Valid LoginRequest loginRequest) {
         accountService.activate(loginRequest.getOauthId());
         Long avatarId = accountService.oauthLogin(loginRequest);
         return sessionTokenService.createToken(loginRequest.toTokenDto(avatarId));
     }
 
     @PostMapping("/signup")
-    public LoginResponse signUp(@RequestBody SignUpRequest signUpRequest) {
+    public LoginResponse signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
         validationUtil.validation(signUpRequest.getOauthId(), signUpRequest.getAccessToken(), signUpRequest.getPlatform());
 
         Long avatarId = accountService.signUp(signUpRequest);

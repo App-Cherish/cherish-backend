@@ -6,6 +6,7 @@ import com.cherish.backend.controller.dto.request.FirstTimeBackUpDiaryRequest;
 import com.cherish.backend.controller.dto.response.BackUpDairyResponse;
 import com.cherish.backend.controller.dto.response.DiaryResponse;
 import com.cherish.backend.service.DiaryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +22,12 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     @PostMapping("/firsttimebackup")
-    public BackUpDairyResponse firstTimeBackUp(@RequestBody FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest, @LoginAvatarId Long avatarId) {
+    public BackUpDairyResponse firstTimeBackUp(@RequestBody @Valid FirstTimeBackUpDiaryRequest firstTimeBackUpDiaryRequest, @LoginAvatarId Long avatarId) {
         return diaryService.firstTimeBackUp(firstTimeBackUpDiaryRequest, avatarId);
     }
 
     @PostMapping("/backup")
-    public BackUpDairyResponse backUp(@RequestBody BackUpDiaryRequest backUpDiaryRequest, @LoginAvatarId Long avatarId) {
+    public BackUpDairyResponse backUp(@RequestBody @Valid BackUpDiaryRequest backUpDiaryRequest, @LoginAvatarId Long avatarId) {
         return diaryService.backUp(backUpDiaryRequest, avatarId);
     }
 

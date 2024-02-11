@@ -1,6 +1,7 @@
 package com.cherish.backend.domain;
 
 
+import com.cherish.backend.exception.EnumTypeConvertException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.stream.Stream;
@@ -26,6 +27,6 @@ public enum DiaryKind {
         return Stream.of(DiaryKind.values())
                 .filter(diaryKind -> diaryKind.getValue().equals(inputValue))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(EnumTypeConvertException::new);
     }
 }

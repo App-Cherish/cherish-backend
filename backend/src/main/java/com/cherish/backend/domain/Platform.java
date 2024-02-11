@@ -1,5 +1,6 @@
 package com.cherish.backend.domain;
 
+import com.cherish.backend.exception.EnumTypeConvertException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.stream.Stream;
@@ -24,6 +25,6 @@ public enum Platform {
         return Stream.of(Platform.values())
                 .filter(platform -> platform.getValue().equals(inputValue))
                 .findFirst()
-                .orElseThrow(()-> new IllegalArgumentException("값을 찾을수가 없습니다."));
+                .orElseThrow(EnumTypeConvertException::new);
     }
 }

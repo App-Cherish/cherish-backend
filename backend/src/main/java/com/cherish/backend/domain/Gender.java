@@ -1,5 +1,6 @@
 package com.cherish.backend.domain;
 
+import com.cherish.backend.exception.EnumTypeConvertException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.stream.Stream;
@@ -24,6 +25,6 @@ public enum Gender {
         return Stream.of(Gender.values())
                 .filter(gender -> gender.getValue().equals(inputValue))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(EnumTypeConvertException::new);
     }
 }

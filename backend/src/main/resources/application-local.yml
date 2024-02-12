@@ -3,28 +3,24 @@ spring:
     activate:
       on-profile: local
   datasource:
-    url: jdbc:h2:mem:cherish;MODE=MYSQL
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://127.0.0.1:3306/cherishdev
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root1234
 
   session:
     jdbc:
       store-type: jdbc
       table-name: SPRING_SESSION
-
-
+      initialize-schema: always
   jpa:
     hibernate:
       ddl-auto: create
-    database: h2
+    database: mysql
     properties:
       hibernate:
         format_sql: true
         show-sql: true
-  h2:
-    console:
-      enabled: true
 logging:
   config:
 logging.level:

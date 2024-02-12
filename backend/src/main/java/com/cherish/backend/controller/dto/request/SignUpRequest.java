@@ -3,7 +3,6 @@ package com.cherish.backend.controller.dto.request;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,9 +29,9 @@ public class SignUpRequest {
     @NotBlank
     private String deviceType;
     @NotBlank
-    private String accessToken;
+    private String refreshToken;
 
-    public SignUpRequest(String oauthId, String name, Platform platform, LocalDate birth, Gender gender, String deviceId, String deviceType, String accessToken) {
+    public SignUpRequest(String oauthId, String name, Platform platform, LocalDate birth, Gender gender, String deviceId, String deviceType, String refreshToken) {
         this.oauthId = oauthId;
         this.name = name;
         this.platform = platform;
@@ -40,6 +39,6 @@ public class SignUpRequest {
         this.gender = gender;
         this.deviceId = deviceId;
         this.deviceType = deviceType;
-        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }

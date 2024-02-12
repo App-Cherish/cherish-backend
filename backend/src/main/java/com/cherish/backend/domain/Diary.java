@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -17,8 +16,9 @@ import static jakarta.persistence.FetchType.LAZY;
 public class Diary extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "diary_id", unique = true, nullable = false)
-    private String id;
+    private Long id;
 
     @Enumerated(value = EnumType.STRING)
     private DiaryKind kind;
@@ -48,7 +48,6 @@ public class Diary extends BaseEntity {
 
     @Builder
     private Diary(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
-        this.id = createId();
         this.kind = kind;
         this.title = title;
         this.content = content;
@@ -74,10 +73,6 @@ public class Diary extends BaseEntity {
 
     public void modifiedBackUp(BackUp changeBackUp) {
         this.backUp = changeBackUp;
-    }
-
-    private String createId() {
-        return UUID.randomUUID().toString().substring(0, 13).replace("-", "");
     }
 
 }

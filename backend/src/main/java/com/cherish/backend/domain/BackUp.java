@@ -21,39 +21,33 @@ public class BackUp extends BaseEntity {
 
     private String deviceType;
 
-    private int diaryCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
 
     @Builder
-    private BackUp(String id, String osVersion, String deviceType, int diaryCount, Avatar avatar) {
+    private BackUp(String id, String osVersion, String deviceType, Avatar avatar) {
         this.id = id;
         this.osVersion = osVersion;
         this.deviceType = deviceType;
-        this.diaryCount = diaryCount;
         this.avatar = avatar;
     }
 
-
-    public static BackUp of(String osVersion, String deviceType, int diaryCount, Avatar avatar) {
+    public static BackUp of(String osVersion, String deviceType, Avatar avatar) {
         return BackUp.builder()
                 .id(UUID.randomUUID().toString().split("-")[0])
                 .avatar(avatar)
                 .osVersion(osVersion)
                 .deviceType(deviceType)
-                .diaryCount(diaryCount)
                 .build();
     }
 
-    public BackUp renew(String osVersion, String deviceType, int diaryCount){
+    public BackUp renew(String osVersion, String deviceType){
         return BackUp.builder()
                 .id(UUID.randomUUID().toString().split("-")[0])
                 .avatar(this.avatar)
                 .osVersion(osVersion)
                 .deviceType(deviceType)
-                .diaryCount(diaryCount)
                 .build();
     }
 

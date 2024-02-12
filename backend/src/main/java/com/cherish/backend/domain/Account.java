@@ -6,9 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static jakarta.persistence.EnumType.*;
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
-import static jakarta.persistence.GenerationType.*;
+import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity(name = "account")
 @Getter
@@ -31,18 +31,23 @@ public class Account extends BaseEntity {
     @JoinColumn(name = "avatar_id", nullable = false)
     private Avatar avatar;
 
-    public static Account of(String oauthId, Platform platform, Avatar avatar) {
+    @Column(nullable = false)
+    private String refreshToken;
+
+    @Builder
+    private Account(String oauthId, Platform platform, Avatar avatar, String refreshToken) {
+        this.oauthId = oauthId;
+        this.platform = platform;
+        this.avatar = avatar;
+        this.refreshToken = refreshToken;
+    }
+
+    public static Account of(String oauthId, Platform platform, Avatar avatar, String refreshToken) {
         return Account.builder()
                 .oauthId(oauthId)
                 .platform(platform)
                 .avatar(avatar)
+                .refreshToken(refreshToken)
                 .build();
-    }
-
-    @Builder
-    private Account(String oauthId, Platform platform, Avatar avatar) {
-        this.oauthId = oauthId;
-        this.platform = platform;
-        this.avatar = avatar;
     }
 }

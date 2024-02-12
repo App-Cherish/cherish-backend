@@ -22,7 +22,6 @@ public class BackUpService {
                 findBackUp.getId(),
                 findBackUp.getOsVersion(),
                 findBackUp.getDeviceType(),
-                findBackUp.getDiaryCount(),
                 findBackUp.getCreatedDate());
     }
 

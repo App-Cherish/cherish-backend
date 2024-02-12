@@ -45,7 +45,7 @@ public class AccountController {
 
     @PostMapping("/signup")
     public LoginResponse signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
-        validationUtil.validation(signUpRequest.getOauthId(), signUpRequest.getAccessToken(), signUpRequest.getPlatform());
+        validationUtil.validation(signUpRequest.getOauthId(), signUpRequest.getRefreshToken(), signUpRequest.getPlatform());
 
         Long avatarId = accountService.signUp(signUpRequest);
 

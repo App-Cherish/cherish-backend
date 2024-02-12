@@ -40,23 +40,23 @@ public class DiaryService {
             throw new ExistBackUpHistory();
         }
 
-        BackUp backUp = backUpRepository.save(BackUp.of(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUpDiaryRequest.getDiaryRequestList().size(), findAvatar));
+        BackUp backUp = backUpRepository.save(BackUp.of(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), findAvatar));
         List<Diary> createDiaryList = createDiaryList(backUpDiaryRequest, findAvatar, backUp);
         diaryRepository.saveAllAndFlush(createDiaryList);
 
-        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate(), createDiaryList.size());
+        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate());
     }
 
     @Transactional
     public BackUpDairyResponse backUp(BackUpDiaryRequest backUpDiaryRequest, Long avatarId) {
         Avatar findAvatar = avatarRepository.findAvatarById(avatarId).orElseThrow(NotExistAvatarException::new);
         BackUp findBackUp = backUpRepository.findById(backUpDiaryRequest.getBackUpId()).orElseThrow(NotExistBackUpException::new);
-        BackUp backUp = backUpRepository.save(findBackUp.renew(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUpDiaryRequest.getDiaryRequestList().size()));
+        BackUp backUp = backUpRepository.save(findBackUp.renew(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType()));
 
         findBackUp.deActive();
 
         for (DiaryRequest diaryRequest : backUpDiaryRequest.getDiaryRequestList()) {
-            if (!diaryRequest.getId().isEmpty()) {
+            if (diaryRequest.getId() == null) {
                 Diary diaryByIdAndAvatarIdAndBackUpId = diaryRepository.findDiaryByIdAndAvatarId(diaryRequest.getId(), avatarId);
                 diaryByIdAndAvatarIdAndBackUpId.modifiedBackUp(backUp);
             }
@@ -64,7 +64,7 @@ public class DiaryService {
 
         diaryRepository.saveAllAndFlush(renewDiaryList(backUpDiaryRequest, findAvatar, backUp));
 
-        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate(), backUp.getDiaryCount());
+        return new BackUpDairyResponse(backUpDiaryRequest.getOsVersion(), backUpDiaryRequest.getDeviceType(), backUp.getId(), backUp.getCreatedDate());
     }
 
     public List<DiaryResponse> getRecentDiaryList(String backUpId, Long avatarId) {

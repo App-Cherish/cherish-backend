@@ -60,11 +60,7 @@ public class AccountService {
                 signUpRequest.getGender()
         );
 
-        Account account = Account.of(
-                signUpRequest.getOauthId(),
-                signUpRequest.getPlatform(),
-                avatar
-        );
+        Account account = Account.of(signUpRequest.getOauthId(), signUpRequest.getPlatform(), avatar, signUpRequest.getRefreshToken());
 
         accountRepository.save(account);
 

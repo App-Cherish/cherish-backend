@@ -15,22 +15,22 @@ public class DiaryRepositoryImpl implements DiaryRepositoryCustom {
 
 
     @Override
-    public List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String backUpId, Long avatarId) {
-        QDiary diary = new QDiary("di");
-
-        return queryFactory.selectFrom(diary)
-                .from(diary)
-                .where(diary.backUp.id.eq(backUpId).and(diary.avatar.id.eq(avatarId)))
-                .fetchAll().fetch();
-    }
-
-    @Override
-    public Diary findDiaryByIdAndAvatarId(String diaryId, Long avatarId) {
+    public Diary findDiaryByIdAndAvatarId(Long diaryId, Long avatarId) {
         QDiary diary = new QDiary("di");
 
         return queryFactory.selectFrom(diary)
                 .from(diary)
                 .where((diary.avatar.id.eq(avatarId)).and(diary.id.eq(diaryId)))
                 .fetchOne();
+    }
+
+    @Override
+    public List<Diary> findDiariesByIdAndAvatarIdAndBackUpId(String backUpId, Long avatarId) {
+        QDiary diary = new QDiary("di");
+
+        return queryFactory.selectFrom(diary)
+                .from(diary)
+                .where(diary.backUp.id.eq(backUpId).and((diary.avatar.id.eq(avatarId))))
+                .fetchAll().fetch();
     }
 }

@@ -17,12 +17,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-
-import java.time.*;
-import java.util.Optional;
 
 @SpringBootTest
 @Transactional
@@ -47,7 +50,7 @@ class SessionTokenServiceTest {
     public void init() {
         avatar = Avatar.of("name1", LocalDate.now(), Gender.MALE);
         avatarRepository.save(avatar);
-        sessionToken = SessionToken.of("device1","type1",avatar);
+        sessionToken = SessionToken.of("device1", "type1", avatar);
         sessionTokenRepository.save(sessionToken);
         given(clock.instant()).willReturn(Clock.systemDefaultZone().instant());
         given(clock.getZone()).willReturn(Clock.systemDefaultZone().getZone());
@@ -95,7 +98,7 @@ class SessionTokenServiceTest {
         //given
         //when
         //then
-        assertThrows(IllegalStateException.class , () -> sessionTokenService.getTokenByDeviceId("asdasdasd"));
+        assertThrows(IllegalStateException.class, () -> sessionTokenService.getTokenByDeviceId("asdasdasd"));
     }
 
     @Test
@@ -117,7 +120,7 @@ class SessionTokenServiceTest {
         given(clock.getZone()).willReturn(fixedClock.getZone());
         //when
         //then
-        assertThrows(OverExpiredDateException.class,()->sessionTokenService.tokenLogin(new TokenLoginRequest(sessionToken.getSessionTokenVaule())));
+        assertThrows(OverExpiredDateException.class, () -> sessionTokenService.tokenLogin(new TokenLoginRequest(sessionToken.getSessionTokenVaule())));
     }
 
     @Test

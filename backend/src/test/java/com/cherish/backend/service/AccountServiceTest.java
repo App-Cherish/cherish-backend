@@ -22,7 +22,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,7 +53,7 @@ class AccountServiceTest {
         given(clock.getZone()).willReturn(Clock.systemDefaultZone().getZone());
         oauthId = "testOauthId";
         avatar = Avatar.of("avatar1", LocalDate.now(), Gender.MALE);
-        account = Account.of(oauthId, Platform.KAKAO, avatar);
+        account = Account.of(oauthId, Platform.KAKAO, avatar, "-8lX2TVOZJQi_44d6AFNLZTVQibekxlICigKPXOaAAABjb1LLBno6jj-qNQmaA");
         accountRepository.save(account);
     }
 
@@ -69,7 +68,7 @@ class AccountServiceTest {
                 Platform.KAKAO,
                 LocalDate.now(),
                 Gender.MALE,
-                "deviceid1","deviceType1","asdasdasasdas"));
+                "deviceid1", "deviceType1", "asdasdasasdas"));
         //when
         Account findAccount = accountRepository.findActiveAccountByOauthId(oauthId).get();
 
@@ -81,7 +80,7 @@ class AccountServiceTest {
     @DisplayName("2.정상적인 요청이 들어오고 이미 회원가입이 완료된 account가 존재할 경우 avatarId를 정상적으로 출력한다.")
     public void loginServiceSuccessTest() throws Exception {
         //given
-        Long avatarId = accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO,"accessToken","iphone1", "devicetype1"));
+        Long avatarId = accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO, "accessToken", "iphone1", "devicetype1"));
         Account findAccount = accountRepository.findActiveAccountByOauthId(oauthId).get();
         //when
         //then
@@ -94,7 +93,7 @@ class AccountServiceTest {
         //given
         //when
         //then
-        assertThrows(NotExistAccountException.class, () ->accountService.oauthLogin(new LoginRequest(oauthId, Platform.APPLE,"accessToken","iphone1", "devicetype1")));
+        assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.APPLE, "accessToken", "iphone1", "devicetype1")));
     }
 
     @Test
@@ -103,7 +102,7 @@ class AccountServiceTest {
         //given
         //when
         //then
-        assertThrows(NotExistAccountException.class, () ->accountService.oauthLogin( new LoginRequest("asdasdasdas", Platform.APPLE,"accessToken","iphone1", "devicetype1")));
+        assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(new LoginRequest("asdasdasdas", Platform.APPLE, "accessToken", "iphone1", "devicetype1")));
 
     }
 
@@ -114,7 +113,7 @@ class AccountServiceTest {
         accountService.leave(avatar.getId());
         //when
         //then
-        assertThrows(LeaveAccountStoreException.class,() -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO,"accessToken","iphone1", "devicetype1")));
+        assertThrows(LeaveAccountStoreException.class, () -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO, "accessToken", "iphone1", "devicetype1")));
     }
 
     @Test
@@ -127,7 +126,7 @@ class AccountServiceTest {
         given(clock.instant()).willReturn(fixedClock.instant());
         given(clock.getZone()).willReturn(fixedClock.getZone());
         //then
-        assertThrows(NotExistAccountException.class,() -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.APPLE,"accessToken","iphone1", "devicetype1")));
+        assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.APPLE, "accessToken", "iphone1", "devicetype1")));
     }
 
 
@@ -145,7 +144,7 @@ class AccountServiceTest {
                     Platform.KAKAO,
                     LocalDate.now(),
                     Gender.MALE,
-                    "deviceid1","deviceType1","asdasdasasdas"));
+                    "deviceid1", "deviceType1", "asdasdasasdas"));
         });
     }
 
@@ -166,7 +165,7 @@ class AccountServiceTest {
     public void leaveSuccessTest2() throws Exception {
         //given
         accountService.leave(avatar.getId());
-        SessionToken.of("asdasd","asdasdas",avatar);
+        SessionToken.of("asdasd", "asdasdas", avatar);
         //when
         //then
         List<SessionToken> findTokens = sessionTokenRepository.findSessionTokenByAvatarId(avatar.getId());
@@ -183,7 +182,7 @@ class AccountServiceTest {
         given(clock.getZone()).willReturn(fixedClock.getZone());
         //when
         //then
-        assertThrows(NotExistAccountException.class,() -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO,"accessToken","iphone1", "devicetype1")));
+        assertThrows(NotExistAccountException.class, () -> accountService.oauthLogin(new LoginRequest(oauthId, Platform.KAKAO, "accessToken", "iphone1", "devicetype1")));
         Optional<Account> findAccount = accountRepository.findAccountByOauthId(oauthId);
         assertThat(findAccount.isEmpty()).isTrue();
     }
@@ -210,8 +209,6 @@ class AccountServiceTest {
         assertThat(findAccount.getActive()).isEqualTo(1);
         assertThat(findAccount.getAvatar().getActive()).isEqualTo(1);
     }
-
-
 
 
 }

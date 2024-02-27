@@ -99,7 +99,7 @@ class AccountRepositoryTest {
     public void saveAccountTestIfExistKakaoAccount() throws Exception {
         //given
         String appleOauthTestId = "testAppleOAuthId";
-        Account appleAccount = Account.of(appleOauthTestId, Platform.APPLE, avatar);
+        Account appleAccount = Account.of(appleOauthTestId, Platform.APPLE, avatar,"asdasdasdasdasdasdasd");
         //when
         Account saveAppleAccount = accountRepository.save(appleAccount);
         //then
@@ -114,10 +114,10 @@ class AccountRepositoryTest {
         Avatar avatar2 = Avatar.of("testAvatar1",LocalDate.now(),Gender.MALE);
 
         String appleOauthTestId = "testAppleOAuthId";
-        Account appleAccount = Account.of(appleOauthTestId, Platform.APPLE, avatar2);
+        Account appleAccount = Account.of(appleOauthTestId, Platform.APPLE, avatar2,"asdasdasdasdasdasd");
         accountRepository.save(appleAccount);
         String kakaoOauthTestId = "testKakaoOAuthId";
-        Account kakaoAccount = Account.of(kakaoOauthTestId, Platform.KAKAO, avatar2);
+        Account kakaoAccount = Account.of(kakaoOauthTestId, Platform.KAKAO, avatar2,"asdasdasdasds");
         //when
         accountRepository.save(appleAccount);
         //then

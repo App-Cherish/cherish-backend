@@ -17,7 +17,7 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public CommonValidationError validationExceptionHandler(BindException e) {
-        CommonValidationError errorResponse = new CommonValidationError("400", "잘못된 요청 입니다.");
+        CommonValidationError errorResponse = new CommonValidationError("400", "validation 오류 입니다.");
 
         for (FieldError error : e.getFieldErrors()) {
             errorResponse.addValidation(error.getField(), error.getDefaultMessage());
@@ -55,4 +55,11 @@ public class ExceptionController {
     public CommonErrorResponse redirectBaseExceptionHandler(Exception e) {
         return new CommonErrorResponse("300", e.getMessage());
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    public CommonErrorResponse serverExceptionHandler(Exception e) {
+        return new CommonErrorResponse("500", e.toString());
+    }
+
 }

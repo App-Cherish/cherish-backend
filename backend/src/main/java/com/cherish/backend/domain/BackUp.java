@@ -42,14 +42,5 @@ public class BackUp extends BaseEntity {
                 .build();
     }
 
-    public BackUp renew(String osVersion, String deviceType){
-        return BackUp.builder()
-                .id(UUID.randomUUID().toString().split("-")[0])
-                .avatar(this.avatar)
-                .osVersion(osVersion)
-                .deviceType(deviceType)
-                .build();
-    }
-
 
 }

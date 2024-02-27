@@ -26,17 +26,11 @@ public class Diary extends BaseEntity {
     @Column
     private String title;
 
-    @Column(nullable = false)
+    @Column
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime writingDate;
-
-    @Column(nullable = false)
-    private String deviceType;
-
-    @Column(nullable = false)
-    private String deviceId;
+    private LocalDateTime clientWritingDate;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "avatar_id", nullable = false)
@@ -46,33 +40,43 @@ public class Diary extends BaseEntity {
     @JoinColumn(name = "backup_id")
     private BackUp backUp;
 
+
     @Builder
-    private Diary(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
+    public Diary(Long id, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
+        this.id = id;
         this.kind = kind;
         this.title = title;
         this.content = content;
-        this.writingDate = writingDate;
-        this.deviceType = deviceType;
-        this.deviceId = deviceId;
+        this.clientWritingDate = clientWritingDate;
         this.avatar = avatar;
         this.backUp = backUp;
     }
 
-    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime writingDate, String deviceType, String deviceId, Avatar avatar, BackUp backUp) {
+    public static Diary of(Long id, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
+        return Diary.builder()
+                .id(id)
+                .avatar(avatar)
+                .kind(kind)
+                .title(title)
+                .content(content)
+                .clientWritingDate(clientWritingDate)
+                .backUp(backUp)
+                .build();
+    }
+
+    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
         return Diary.builder()
                 .avatar(avatar)
                 .kind(kind)
                 .title(title)
                 .content(content)
-                .writingDate(writingDate)
-                .deviceType(deviceType)
-                .deviceId(deviceId)
+                .clientWritingDate(clientWritingDate)
                 .backUp(backUp)
                 .build();
     }
 
-    public void modifiedBackUp(BackUp changeBackUp) {
-        this.backUp = changeBackUp;
-    }
 
+    public void updateBackUp(BackUp backUp) {
+        this.backUp = backUp;
+    }
 }

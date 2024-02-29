@@ -24,6 +24,9 @@ public class Diary extends BaseEntity {
     private DiaryKind kind;
 
     @Column
+    private String clientId;
+
+    @Column
     private String title;
 
     @Column
@@ -42,8 +45,9 @@ public class Diary extends BaseEntity {
 
 
     @Builder
-    public Diary(Long id, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
+    private Diary(Long id, String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
         this.id = id;
+        this.clientId = clientId;
         this.kind = kind;
         this.title = title;
         this.content = content;
@@ -52,9 +56,10 @@ public class Diary extends BaseEntity {
         this.backUp = backUp;
     }
 
-    public static Diary of(Long id, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
+    public static Diary of(Long id, String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
         return Diary.builder()
                 .id(id)
+                .clientId(clientId)
                 .avatar(avatar)
                 .kind(kind)
                 .title(title)
@@ -64,10 +69,11 @@ public class Diary extends BaseEntity {
                 .build();
     }
 
-    public static Diary of(DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
+    public static Diary of(DiaryKind kind, String clientId, String title, String content, LocalDateTime clientWritingDate, Avatar avatar, BackUp backUp) {
         return Diary.builder()
                 .avatar(avatar)
                 .kind(kind)
+                .clientId(clientId)
                 .title(title)
                 .content(content)
                 .clientWritingDate(clientWritingDate)

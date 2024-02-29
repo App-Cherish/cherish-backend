@@ -25,6 +25,9 @@ public class DiaryEvent extends BaseEntity {
     private DiaryKind kind;
 
     @Column
+    private String clientId;
+
+    @Column
     private String title;
 
     @Column
@@ -49,7 +52,8 @@ public class DiaryEvent extends BaseEntity {
     private Avatar avatar;
 
     @Builder
-    public DiaryEvent(DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
+    public DiaryEvent(String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
+        this.clientId = clientId;
         this.kind = kind;
         this.title = title;
         this.content = content;
@@ -60,8 +64,9 @@ public class DiaryEvent extends BaseEntity {
         this.avatar = avatar;
     }
 
-    public static DiaryEvent of(DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
+    public static DiaryEvent of(String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
         return DiaryEvent.builder().
+                clientId(clientId).
                 kind(kind).
                 clientWritingDate(clientWritingDate).
                 title(title).

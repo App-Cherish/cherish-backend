@@ -45,9 +45,9 @@ class DiaryRepositoryTest {
         em.persist(avatar);
         em.persist(backUp);
 
-        diary1 = Diary.of(DiaryKind.FREE, "title1", "content1", LocalDateTime.now(), avatar, backUp);
-        diary2 = Diary.of(DiaryKind.FREE, "title2", "content2", LocalDateTime.now(), avatar, backUp);
-        diary3 = Diary.of(DiaryKind.FREE, "title3", "content3", LocalDateTime.now(), avatar, backUp);
+        diary1 = Diary.of(DiaryKind.FREE, "clientId1", "title1", "content1", LocalDateTime.now(), avatar, backUp);
+        diary2 = Diary.of(DiaryKind.FREE, "clientId2", "title2", "content2", LocalDateTime.now(), avatar, backUp);
+        diary3 = Diary.of(DiaryKind.FREE, "clientId3", "title3", "content3", LocalDateTime.now(), avatar, backUp);
 
 
         em.persist(diary1);
@@ -77,7 +77,7 @@ class DiaryRepositoryTest {
         em.flush();
         //when
         Diary findDiary = em.find(Diary.class, diary1.getId());
-        Diary updateDiary = Diary.of(findDiary.getId(), DiaryKind.QUESTION, "editTitle", "editContent", diary1.getClientWritingDate(), diary1.getAvatar(), newBackUp);
+        Diary updateDiary = Diary.of(findDiary.getId(), diary1.getClientId(), DiaryKind.QUESTION, "editTitle", "editContent", diary1.getClientWritingDate(), diary1.getAvatar(), newBackUp);
         diaryRepository.updateDiary(updateDiary);
         //then
         em.flush();

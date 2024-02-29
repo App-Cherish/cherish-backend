@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 public class DiaryEventRequest {
 
+    private final String clientId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private final LocalDateTime clientWritingDate;
@@ -23,7 +24,8 @@ public class DiaryEventRequest {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private final LocalDateTime eventDate;
 
-    public DiaryEventRequest(LocalDateTime clientWritingDate, String title, String content, DiaryKind diaryKind, LocalDateTime eventDate) {
+    public DiaryEventRequest(String clientId, LocalDateTime clientWritingDate, String title, String content, DiaryKind diaryKind, LocalDateTime eventDate) {
+        this.clientId = clientId;
         this.clientWritingDate = clientWritingDate;
         this.title = title;
         this.content = content;
@@ -33,6 +35,7 @@ public class DiaryEventRequest {
 
     public DiaryEvent toEventEntity(DiaryEventType diaryEventType, Avatar avatar, BackUp backUp) {
         return DiaryEvent.of(
+                this.clientId,
                 this.diaryKind,
                 this.title,
                 this.content,
@@ -46,6 +49,7 @@ public class DiaryEventRequest {
     public Diary toDiaryEntity(BackUp backUp, Avatar avatar) {
         return Diary.of(
                 this.diaryKind,
+                this.clientId,
                 this.title,
                 this.content,
                 this.clientWritingDate,

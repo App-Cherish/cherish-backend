@@ -89,7 +89,7 @@ public class DiaryEventRequestList {
                 .filter(diary -> toEditEventMapByLastEventDate().containsKey(diary.getClientWritingDate()))
                 .map(diary -> {
                     DiaryEventRequest request = toEditEventMapByLastEventDate().get(diary.getClientWritingDate());
-                    return Diary.of(diary.getId(), request.getDiaryKind(), request.getTitle(), request.getContent(), request.getClientWritingDate(), avatar, diary.getBackUp());
+                    return Diary.of(diary.getId(), diary.getClientId(), request.getDiaryKind(), request.getTitle(), request.getContent(), request.getClientWritingDate(), avatar, diary.getBackUp());
                 })
                 .toList();
     }
@@ -104,7 +104,7 @@ public class DiaryEventRequestList {
         return findDiaryList.stream()
                 .filter(diary -> this.getDeleteEventList().stream()
                         .anyMatch(request -> request.getClientWritingDate().equals(diary.getClientWritingDate())))
-                .map(e -> Diary.of(e.getId(), e.getKind(), e.getTitle(), e.getContent(), e.getClientWritingDate(), avatar, backUp))
+                .map(e -> Diary.of(e.getId(), e.getClientId(), e.getKind(), e.getTitle(), e.getContent(), e.getClientWritingDate(), avatar, backUp))
                 .toList();
     }
 
@@ -116,7 +116,7 @@ public class DiaryEventRequestList {
 
         if (editLastEventMap.isEmpty()) {
             return this.createEventList.stream()
-                    .map(e -> Diary.of(e.getDiaryKind(), e.getTitle(), e.getContent(), e.getClientWritingDate(), avatar, backUp))
+                    .map(e -> Diary.of(e.getDiaryKind(), e.getClientId(), e.getTitle(), e.getContent(), e.getClientWritingDate(), avatar, backUp))
                     .toList();
         }
 
@@ -124,7 +124,7 @@ public class DiaryEventRequestList {
                 .map(diaryEvent -> editLastEventMap.containsKey(diaryEvent.getClientWritingDate())
                         ? editLastEventMap.get(diaryEvent.getClientWritingDate()).toEventEntity(DiaryEventType.CREATE, avatar, backUp)
                         : diaryEvent)
-                .map(event -> Diary.of(event.getKind(), event.getTitle(), event.getContent(), event.getClientWritingDate(), event.getAvatar(), event.getBackUp())).toList();
+                .map(event -> Diary.of(event.getKind(), event.getClientId(), event.getTitle(), event.getContent(), event.getClientWritingDate(), event.getAvatar(), event.getBackUp())).toList();
     }
 
 
@@ -136,7 +136,7 @@ public class DiaryEventRequestList {
         return diaryList.stream()
                 .filter(d -> this.deleteEventList.stream()
                         .noneMatch(e -> e.getClientWritingDate().isEqual(d.getClientWritingDate())))
-                .map(d -> Diary.of(d.getKind(), d.getTitle(), d.getContent(), d.getClientWritingDate(), d.getAvatar(), d.getBackUp()))
+                .map(d -> Diary.of(d.getKind(), d.getClientId(), d.getTitle(), d.getContent(), d.getClientWritingDate(), d.getAvatar(), d.getBackUp()))
                 .toList();
     }
 }

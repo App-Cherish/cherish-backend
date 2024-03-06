@@ -31,19 +31,19 @@ jobs:
         token: ${{ secrets.ACTION_TOKEN }}
         submodules: true
       
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    - name: check-config
-      run: ls
-    - name: copy-config
-      run: cp -r ../cherish-config/resources ./src/resources
-    - name: ls
-      run: ls ./src/resources
-    - name: Grant execute permission for gradlew
-      run: chmod +x ./gradlew
+    # - name: Set up JDK 17
+    #   uses: actions/setup-java@v3
+    #   with:
+    #     java-version: '17'
+    #     distribution: 'temurin'
+    # - name: check-config
+    #   run: ls
+    # - name: copy-config
+    #   run: cp -r ../cherish-config/resources ./src/resources
+    # - name: ls
+    #   run: ls ./src/resources
+    # - name: Grant execute permission for gradlew
+    #   run: chmod +x ./gradlew
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2

@@ -1,120 +1,125 @@
 //swagger
 buildscript {
-	ext {
-		restdocsApiSpecVersion = '0.17.1'
-	}
+    ext {
+        restdocsApiSpecVersion = '0.17.1'
+    }
 }
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.1.5'
-	id 'io.spring.dependency-management' version '1.1.3'
-	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-	id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
-	id 'org.hidetake.swagger.generator' version '2.18.2'
+    id 'java'
+    id 'org.springframework.boot' version '3.1.5'
+    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'com.epages.restdocs-api-spec' version "${restdocsApiSpecVersion}"
+    id 'org.hidetake.swagger.generator' version '2.18.2'
 }
 
 group = 'com.cherish'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '17'
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 ext {
-	set('snippetsDir', file("build/generated-snippets"))
+    set('snippetsDir', file("build/generated-snippets"))
 }
 
 
 tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+    inputs.dir snippetsDir
+    dependsOn test
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.session:spring-session-core'
-	implementation 'org.springframework.session:spring-session-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.session:spring-session-core'
+    implementation 'org.springframework.session:spring-session-jdbc'
     testImplementation 'junit:junit:4.13.1'
     compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'com.epages:restdocs-api-spec-mockmvc:' + restdocsApiSpecVersion
-	implementation group: 'ca.pjer', name: 'logback-awslogs-appender', version: '1.6.0'
-	swaggerUI 'org.webjars:swagger-ui:4.11.1'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'com.epages:restdocs-api-spec-mockmvc:' + restdocsApiSpecVersion
+    implementation group: 'ca.pjer', name: 'logback-awslogs-appender', version: '1.6.0'
+    swaggerUI 'org.webjars:swagger-ui:4.11.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
 }
 
 tasks.named('test') {
-	outputs.dir snippetsDir
-	useJUnitPlatform()
+    outputs.dir snippetsDir
+    useJUnitPlatform()
 }
 
 def querydslSrcDir = 'src/main/generated'
 
 clean {
-	delete file(querydslSrcDir)
+    delete file(querydslSrcDir)
 }
 
 tasks.withType(JavaCompile) {
-	options.generatedSourceOutputDirectory = file(querydslSrcDir)
+    options.generatedSourceOutputDirectory = file(querydslSrcDir)
 }
 
 swaggerSources {
-	sample {
-		setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
-	}
+    sample {
+        setInputFile(file("${project.buildDir}/api-spec/openapi3.yaml"))
+    }
 }
 
 openapi3 {
-	servers = [
-			{ url = "https://api.hoydev.com" }
-	]
-	title = "API 문서"
-	description = "RestDocsWithSwagger Docs"
-	version = "0.0.1"
-	format = "yaml"
+    servers = [
+            { url = "https://api.hoydev.com" }
+    ]
+    title = "API 문서"
+    description = "RestDocsWithSwagger Docs"
+    version = "0.0.1"
+    format = "yaml"
 }
 
 tasks.withType(GenerateSwaggerUI) {
-	dependsOn 'openapi3'
-	doFirst {
-		def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
+    dependsOn 'openapi3'
+    doFirst {
+        def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
 
-		def securitySchemesContent =  "  securitySchemes:\n" +  \
-                                      "    APIKey:\n" +  \
-                                      "      type: apiKey\n" +  \
-                                      "      name: SESSION\n" +  \
-                                      "      in: COOKIE\n" + \
-                                      "security:\n" +
-				"  - APIKey: []  # Apply the security scheme here"
+        def securitySchemesContent = "  securitySchemes:\n" +              \
+                                                  "    APIKey:\n" +              \
+                                                  "      type: apiKey\n" +              \
+                                                  "      name: SESSION\n" +              \
+                                                  "      in: COOKIE\n" +             \
+                                                  "security:\n" +
+                "  - APIKey: []  # Apply the security scheme here"
 
-		swaggerUIFile.append securitySchemesContent
-	}
+        swaggerUIFile.append securitySchemesContent
+    }
 }
 
 bootJar {
-	dependsOn generateSwaggerUISample
-	from("${generateSwaggerUISample.outputDir}") {
-		into 'static/docs'
-	}
+    dependsOn generateSwaggerUISample
+    from("${generateSwaggerUISample.outputDir}") {
+        into 'static/docs'
+    }
 }

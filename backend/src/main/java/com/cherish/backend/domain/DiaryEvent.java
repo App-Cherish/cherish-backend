@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -23,41 +25,56 @@ public class DiaryEvent extends BaseEntity {
     private DiaryKind kind;
 
     @Column
+    private String clientId;
+
+    @Column
     private String title;
 
-    @Column(nullable = false)
+    @Column
     private String content;
+
+    @Column
+    private LocalDateTime clientWritingDate;
 
     @Column
     @Enumerated(value = EnumType.STRING)
     private DiaryEventType diaryEventType;
 
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "diary_id")
-    private Diary diary;
+    @Column
+    private LocalDateTime eventDate;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "backup_id")
     private BackUp backUp;
 
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "avatar_id")
+    private Avatar avatar;
+
     @Builder
-    private DiaryEvent(DiaryKind kind, String title, String content, DiaryEventType diaryEventType, Diary diary, BackUp backUp) {
+    public DiaryEvent(String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
+        this.clientId = clientId;
         this.kind = kind;
         this.title = title;
         this.content = content;
+        this.clientWritingDate = clientWritingDate;
         this.diaryEventType = diaryEventType;
-        this.diary = diary;
+        this.eventDate = eventDate;
         this.backUp = backUp;
+        this.avatar = avatar;
     }
 
-    public static DiaryEvent of(DiaryKind kind, String title, String content, DiaryEventType diaryEventType, Diary diary, BackUp backUp) {
+    public static DiaryEvent of(String clientId, DiaryKind kind, String title, String content, LocalDateTime clientWritingDate, DiaryEventType diaryEventType, LocalDateTime eventDate, BackUp backUp, Avatar avatar) {
         return DiaryEvent.builder().
+                clientId(clientId).
                 kind(kind).
+                clientWritingDate(clientWritingDate).
                 title(title).
                 content(content).
                 diaryEventType(diaryEventType).
-                diary(diary).
+                eventDate(eventDate).
                 backUp(backUp).
+                avatar(avatar).
                 build();
     }
 }

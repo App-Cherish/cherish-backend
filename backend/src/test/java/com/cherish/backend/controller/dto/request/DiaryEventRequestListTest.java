@@ -42,9 +42,15 @@ class DiaryEventRequestListTest {
     List<DiaryEventRequest> deleteList = new ArrayList<>();
 
 
-    Diary diary1 = Diary.of(createEventRequest1.getDiaryKind(), createEventRequest1.getClientId(), createEventRequest1.getTitle(), createEventRequest1.getContent(), createEventRequest1.getClientWritingDate(), avatar, backUp);
-    Diary diary2 = Diary.of(createEventRequest2.getDiaryKind(), createEventRequest2.getClientId(), createEventRequest2.getTitle(), createEventRequest2.getContent(), createEventRequest2.getClientWritingDate(), avatar, backUp);
-    Diary diary3 = Diary.of(createEventRequest3.getDiaryKind(), createEventRequest3.getClientId(), createEventRequest3.getTitle(), createEventRequest3.getContent(), createEventRequest3.getClientWritingDate(), avatar, backUp);
+    Diary diary1 = Diary.of(DiaryKind.FREE, "clientId1", "title1", "content1", LocalDateTime.now(), avatar, backUp);
+    Diary diary2 = Diary.of(DiaryKind.FREE, "clientId2", "title2", "content2", LocalDateTime.now(), avatar, backUp);
+    Diary diary3 = Diary.of(DiaryKind.FREE, "clientId3", "title3", "content3", LocalDateTime.now(), avatar, backUp);
+
+    DiaryEventRequest editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
+    DiaryEventRequest editExistEventRequest2 = new DiaryEventRequest(diary2.getClientId(), diary2.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary2.getClientWritingDate().plusHours(1L));
+    DiaryEventRequest editExistEventRequest3 = new DiaryEventRequest(diary3.getClientId(), diary3.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary3.getClientWritingDate().plusHours(1L));
+    DiaryEventRequest deleteExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(4L));
+
 
     List<Diary> diaryList = new ArrayList<>();
 
@@ -178,19 +184,19 @@ class DiaryEventRequestListTest {
         editList.add(editEventRequest2_1);
         editList.add(editEventRequest2_Last);
         //when
-        Map<LocalDateTime, DiaryEventRequest> editMap = diaryEventRequestList.toEditEventMapByLastEventDate();
+        Map<String, DiaryEventRequest> editMap = diaryEventRequestList.toEditEventMapByLastEventDate();
         //then
-        assertThat(editMap.get(editEventRequest1.getClientWritingDate()).getTitle()).isEqualTo(editEventRequest1_Last.getTitle());
-        assertThat(editMap.get(editEventRequest1.getClientWritingDate()).getContent()).isEqualTo(editEventRequest1_Last.getContent());
-        assertThat(editMap.get(editEventRequest1.getClientWritingDate()).getDiaryKind()).isEqualTo(editEventRequest1_Last.getDiaryKind());
+        assertThat(editMap.get(editEventRequest1.getClientId()).getTitle()).isEqualTo(editEventRequest1_Last.getTitle());
+        assertThat(editMap.get(editEventRequest1.getClientId()).getContent()).isEqualTo(editEventRequest1_Last.getContent());
+        assertThat(editMap.get(editEventRequest1.getClientId()).getDiaryKind()).isEqualTo(editEventRequest1_Last.getDiaryKind());
 
-        assertThat(editMap.get(editEventRequest2.getClientWritingDate()).getTitle()).isEqualTo(editEventRequest2_Last.getTitle());
-        assertThat(editMap.get(editEventRequest2.getClientWritingDate()).getContent()).isEqualTo(editEventRequest2_Last.getContent());
-        assertThat(editMap.get(editEventRequest2.getClientWritingDate()).getDiaryKind()).isEqualTo(editEventRequest2_Last.getDiaryKind());
+        assertThat(editMap.get(editEventRequest2.getClientId()).getTitle()).isEqualTo(editEventRequest2_Last.getTitle());
+        assertThat(editMap.get(editEventRequest2.getClientId()).getContent()).isEqualTo(editEventRequest2_Last.getContent());
+        assertThat(editMap.get(editEventRequest2.getClientId()).getDiaryKind()).isEqualTo(editEventRequest2_Last.getDiaryKind());
 
-        assertThat(editMap.get(editEventRequest3.getClientWritingDate()).getTitle()).isEqualTo(editEventRequest3.getTitle());
-        assertThat(editMap.get(editEventRequest3.getClientWritingDate()).getContent()).isEqualTo(editEventRequest3.getContent());
-        assertThat(editMap.get(editEventRequest3.getClientWritingDate()).getDiaryKind()).isEqualTo(editEventRequest3.getDiaryKind());
+        assertThat(editMap.get(editEventRequest3.getClientId()).getTitle()).isEqualTo(editEventRequest3.getTitle());
+        assertThat(editMap.get(editEventRequest3.getClientId()).getContent()).isEqualTo(editEventRequest3.getContent());
+        assertThat(editMap.get(editEventRequest3.getClientId()).getDiaryKind()).isEqualTo(editEventRequest3.getDiaryKind());
 
         assertThat(editMap.size()).isEqualTo(3);
     }
@@ -201,7 +207,7 @@ class DiaryEventRequestListTest {
         //given
         diaryEventRequestList = new DiaryEventRequestList(null, null, null, "ios100", "ios99");
         //when
-        Map<LocalDateTime, DiaryEventRequest> editMap = diaryEventRequestList.toEditEventMapByLastEventDate();
+        Map<String, DiaryEventRequest> editMap = diaryEventRequestList.toEditEventMapByLastEventDate();
         //then
         assertThat(editMap.size()).isEqualTo(0);
     }
@@ -211,19 +217,24 @@ class DiaryEventRequestListTest {
     public void toEditDiaryListFromFindDiaryListTest() throws Exception {
         //given
         //when
+        editList.add(editExistEventRequest1);
+        editList.add(editExistEventRequest2);
+        editList.add(editExistEventRequest3);
+
+        diaryEventRequestList = new DiaryEventRequestList(null, editList, null, "ios99", "ios999");
         List<Diary> resultList = diaryEventRequestList.toEditDiaryListFromFindDiaryList(diaryList, avatar);
         //then
-        assertThat(resultList).extracting("title").contains(editEventRequest1.getTitle());
-        assertThat(resultList).extracting("title").contains(editEventRequest2.getTitle());
-        assertThat(resultList).extracting("title").contains(editEventRequest3.getTitle());
+        assertThat(resultList).extracting("title").contains(editExistEventRequest1.getTitle());
+        assertThat(resultList).extracting("title").contains(editExistEventRequest2.getTitle());
+        assertThat(resultList).extracting("title").contains(editExistEventRequest3.getTitle());
 
-        assertThat(resultList).extracting("content").contains(editEventRequest1.getContent());
-        assertThat(resultList).extracting("content").contains(editEventRequest2.getContent());
-        assertThat(resultList).extracting("content").contains(editEventRequest3.getContent());
+        assertThat(resultList).extracting("content").contains(editExistEventRequest1.getContent());
+        assertThat(resultList).extracting("content").contains(editExistEventRequest2.getContent());
+        assertThat(resultList).extracting("content").contains(editExistEventRequest3.getContent());
 
-        assertThat(resultList).extracting("kind").contains(editEventRequest1.getDiaryKind());
-        assertThat(resultList).extracting("kind").contains(editEventRequest2.getDiaryKind());
-        assertThat(resultList).extracting("kind").contains(editEventRequest3.getDiaryKind());
+        assertThat(resultList).extracting("kind").contains(editExistEventRequest1.getDiaryKind());
+        assertThat(resultList).extracting("kind").contains(editExistEventRequest2.getDiaryKind());
+        assertThat(resultList).extracting("kind").contains(editExistEventRequest3.getDiaryKind());
 
         assertThat(resultList.size()).isEqualTo(3);
     }
@@ -244,17 +255,17 @@ class DiaryEventRequestListTest {
     public void toDeleteDiaryListFromFindDiaryListTest() throws Exception {
         //given
         //when
+        deleteList.clear();
+        deleteList.add(deleteExistEventRequest1);
+        diaryEventRequestList = new DiaryEventRequestList(null, null, deleteList, "ios99", "iphone99");
+
+
         List<Diary> resultList = diaryEventRequestList.toDeleteDiaryListFromFindDiaryList(diaryList, avatar);
         //then
         assertThat(resultList).extracting("title").contains(diary1.getTitle());
         assertThat(resultList).extracting("content").contains(diary1.getContent());
         assertThat(resultList).extracting("kind").contains(diary1.getKind());
-
-        assertThat(resultList).extracting("title").contains(diary2.getTitle());
-        assertThat(resultList).extracting("content").contains(diary2.getContent());
-        assertThat(resultList).extracting("kind").contains(diary2.getKind());
-
-        assertThat(resultList.size()).isEqualTo(2);
+        assertThat(resultList.size()).isEqualTo(1);
     }
 
     @Test
@@ -273,21 +284,21 @@ class DiaryEventRequestListTest {
     @DisplayName("기존에 존재하는 diary Entity 리스트에 lasteventmap을 적용한 경우 이가 적용된 arraylist를 반환해야 한다.")
     public void toCreateDiaryEntityModifiedByEditEventListTest() throws Exception {
         //given
-        Map<LocalDateTime, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
+        Map<String, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
         //when
         List<Diary> diaryList = diaryEventRequestList.toCreateDiaryEntityModifiedByEditEventList(lastEventMap, avatar, backUp);
         //then
-        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest1.getClientWritingDate()).getTitle());
-        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest1.getClientWritingDate()).getContent());
-        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest1.getClientWritingDate()).getDiaryKind());
+        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest1.getClientId()).getTitle());
+        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest1.getClientId()).getContent());
+        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest1.getClientId()).getDiaryKind());
 
-        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest2.getClientWritingDate()).getTitle());
-        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest2.getClientWritingDate()).getContent());
-        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest2.getClientWritingDate()).getDiaryKind());
+        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest2.getClientId()).getTitle());
+        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest2.getClientId()).getContent());
+        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest2.getClientId()).getDiaryKind());
 
-        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest3.getClientWritingDate()).getTitle());
-        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest3.getClientWritingDate()).getContent());
-        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest3.getClientWritingDate()).getDiaryKind());
+        assertThat(diaryList).extracting("title").contains(lastEventMap.get(editEventRequest3.getClientId()).getTitle());
+        assertThat(diaryList).extracting("content").contains(lastEventMap.get(editEventRequest3.getClientId()).getContent());
+        assertThat(diaryList).extracting("kind").contains(lastEventMap.get(editEventRequest3.getClientId()).getDiaryKind());
 
         assertThat(diaryList.size()).isEqualTo(3);
     }
@@ -297,7 +308,7 @@ class DiaryEventRequestListTest {
     public void toCreateDiaryEntityModifiedByEditEventListTestIfCreateListNull() throws Exception {
         //given
         diaryEventRequestList = new DiaryEventRequestList(null, editList, null, "ios100", "ios99");
-        Map<LocalDateTime, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
+        Map<String, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
         //when
         List<Diary> diaryList = diaryEventRequestList.toCreateDiaryEntityModifiedByEditEventList(lastEventMap, avatar, backUp);
         //then
@@ -309,7 +320,7 @@ class DiaryEventRequestListTest {
     public void toCreateDiaryEntityModifiedByEditEventListTestIfLastEventMapNull() throws Exception {
         //given
         diaryEventRequestList = new DiaryEventRequestList(createList, null, null, "ios100", "ios99");
-        Map<LocalDateTime, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
+        Map<String, DiaryEventRequest> lastEventMap = diaryEventRequestList.toEditEventMapByLastEventDate();
         //when
         List<Diary> diaryList = diaryEventRequestList.toCreateDiaryEntityModifiedByEditEventList(lastEventMap, avatar, backUp);
         //then
@@ -321,9 +332,13 @@ class DiaryEventRequestListTest {
     public void createDiaryListDeleteByDeleteEventListTest() throws Exception {
         //given
         //when
+        List<DiaryEventRequest> deleteList = new ArrayList<>();
+        deleteList.add(deleteExistEventRequest1);
+        diaryEventRequestList = new DiaryEventRequestList(createList, null, deleteList, "ios100", "ios99");
+
         List<Diary> resultList = diaryEventRequestList.createDiaryListDeleteByDeleteEventList(diaryList);
         //then
-        assertThat(resultList.size()).isEqualTo(1);
+        assertThat(resultList.size()).isEqualTo(2);
     }
 
     @Test

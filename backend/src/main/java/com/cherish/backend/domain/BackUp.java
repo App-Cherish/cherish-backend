@@ -1,5 +1,6 @@
 package com.cherish.backend.domain;
 
+import com.cherish.backend.controller.dto.response.BackUpHistoryResponse;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,6 +22,8 @@ public class BackUp extends BaseEntity {
 
     private String deviceType;
 
+    private Integer count;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avatar_id")
     private Avatar avatar;
@@ -40,7 +43,14 @@ public class BackUp extends BaseEntity {
                 .osVersion(osVersion)
                 .deviceType(deviceType)
                 .build();
+
     }
 
+    public void setCount(Integer count) {
+        this.count = count;
+    }
 
+    public BackUpHistoryResponse toDto() {
+        return new BackUpHistoryResponse(this.getId(), this.getCreatedDate(), this.getDeviceType(), this.getOsVersion(), this.count);
+    }
 }

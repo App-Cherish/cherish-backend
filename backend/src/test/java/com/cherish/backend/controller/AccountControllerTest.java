@@ -1,6 +1,7 @@
 package com.cherish.backend.controller;
 
-import com.cherish.backend.controller.dto.request.LoginRequest;
+import com.cherish.backend.controller.dto.request.KakaoLoginRequest;
+import com.cherish.backend.controller.dto.request.KakaoSignUpRequest;
 import com.cherish.backend.controller.dto.request.TokenLoginRequest;
 import com.cherish.backend.domain.*;
 import com.cherish.backend.exception.SocialLoginValidationException;
@@ -33,7 +34,6 @@ import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -92,30 +92,47 @@ public class AccountControllerTest {
         httpSession.clearAttributes();
     }
 
+    private String kakaoLoginRequestToString(KakaoLoginRequest kakaoLoginRequest) {
+        return "{" +
+                "\"oauthId\":\"" + kakaoLoginRequest.getOauthId() + "\"," +
+                "\"platform\":\"" + kakaoLoginRequest.getPlatform().getValue() + "\"," +
+                "\"deviceId\":\"" + kakaoLoginRequest.getDeviceId() + "\"," +
+                "\"deviceType\":\"" + kakaoLoginRequest.getDeviceType() + "\"," +
+                "\"accessToken\":\"" + kakaoLoginRequest.getAccessToken() + "\"," +
+                "\"refreshToken\":\"" + kakaoLoginRequest.getRefreshToken() + "\"" +
+                "}";
+    }
+
+    private String kakaoSignUpRequestToString(KakaoSignUpRequest kakaoSignUpRequest) {
+        return "{" +
+                "\"oauthId\":\"" + kakaoSignUpRequest.getOauthId() + "\"," +
+                "\"name\":\"" + kakaoSignUpRequest.getName() + "\"," +
+                "\"birth\": \"" + kakaoSignUpRequest.getBirth() + "\"," +
+                "\"gender\" : \"" + kakaoSignUpRequest.getGender().getValue() + "\"," +
+                "\"deviceId\" : \"" + kakaoSignUpRequest.getDeviceId() + "\"," +
+                "\"deviceType\": \"" + kakaoSignUpRequest.getDeviceType() + "\"," +
+                "\"accessToken\" : \"" + kakaoSignUpRequest.getAccessToken() + "\"," +
+                "\"refreshToken\" : \"" + kakaoSignUpRequest.getRefreshToken() + "\"" +
+                "}";
+    }
+
 
     @Test
     @DisplayName("1.정상적인 회원가입을 수행한 경우 http status 200과 세션과 바디에 토큰을 출력한다. ")
     public void signUpAPISuccessTest() throws Exception {
+
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", LocalDate.now(), Gender.FEMALE, "deviceId", "deviceType", "accessToken1", "refreshToken1"));
+
         //given
-        String requestJson =
-                "{\"oauthId\": \"testOauthId\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\" : \"asdasdasdas\"}";
         //when
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
-        MvcResult mvcResult = mockMvc.perform(post("/api/account/signup")
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
+        MvcResult mvcResult = mockMvc.perform(post("/api/account/signup/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenId").exists())
-                .andExpect(jsonPath("$.expiredTime").exists())
                 .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
@@ -129,23 +146,23 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
-        LoginRequest loginRequest = new LoginRequest(testOauthId1, Platform.KAKAO, "asdasdasdasdas", "iphone1234", "iphon15");
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest(testOauthId1, Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
         //when
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
         //then
 
 
-        String request = "{\"oauthId\":\"testOauthId1\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        String request = kakaoLoginRequestToString(kakaoLoginRequest);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/account/oauthlogin")
+        MvcResult mvcResult = mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenId").exists())
-                .andExpect(jsonPath("$.expiredTime").exists()).andReturn();
+                .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
         assertThat(sessionValue).isEqualTo(avatar.getId().toString());
@@ -158,19 +175,16 @@ public class AccountControllerTest {
         String testOauthId = "testOauthId";
         Avatar avatar = Avatar.of("testId", LocalDate.now(), Gender.MALE);
         avatarRepository.save(avatar);
-        accountRepository.save(Account.of(testOauthId, Platform.KAKAO, avatar));
+        accountRepository.save(Account.of(testOauthId, Platform.KAKAO, avatar, "asdasdasdasdasd"));
+
+
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest(testOauthId, Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
 
         //when
-        String requestJson = "{\"oauthId\": \"" + testOauthId + "\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\" : \"asdasdasdas\"}";
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
-        mockMvc.perform(post("/api/account/signup")
+
+        mockMvc.perform(post("/api/account/signup/kakao")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)
         ).andExpect(status().isBadRequest());
@@ -182,17 +196,12 @@ public class AccountControllerTest {
     @DisplayName("4.oauth 로그인 시도 시에 만약 기존에 로그인한 기록이 없는 경우 300코드를 출력한다.")
     public void loginAPIFailTest2() throws Exception {
         //given
-        String requestJson = "{\"oauthId\": \"test1234\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\" : \"asdasdasdas\"}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON).content(requestJson)).andExpect(status().isMultipleChoices());
+        mockMvc.perform(post("/api/account/oauth/kakao").contentType(MediaType.APPLICATION_JSON).content(requestJson)).andExpect(status().isMultipleChoices());
     }
 
 
@@ -204,9 +213,7 @@ public class AccountControllerTest {
         String deviceId = "testDeviceId";
 
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        accountRepository.save(Account.of(
-                testOauthId1,
-                Platform.KAKAO, avatar));
+        accountRepository.save(Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd"));
         SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
         tokenRepository.save(token);
         //when
@@ -219,7 +226,6 @@ public class AccountControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenId").exists())
-                .andExpect(jsonPath("$.expiredTime").exists())
                 .andReturn();
 
         String sessionValue = mvcResult.getRequest().getSession().getAttribute(ConstValue.sessionName).toString();
@@ -227,12 +233,17 @@ public class AccountControllerTest {
     }
 
     @Test
-    @DisplayName("6.토큰 로그인 시도시에 입력한 파라미터 값으로 토큰 값이 존재하지 않는 경우 상태코드 400을 출력한다.")
+    @DisplayName("6.토큰 로그인 시도시에 입력한 파라미터 값으로 토큰 값이 존재하지 않는 경우 상태코드 404을 출력한다.")
     public void tokenLoginFailTest1() throws Exception {
         //given
         //when
         //then
-        mockMvc.perform(post("/api/account/tokenlogin")).andExpect(status().isBadRequest());
+        TokenLoginRequest tokenLoginRequest = new TokenLoginRequest("asdasdasdasdasdasd");
+
+        mockMvc.perform(post("/api/account/tokenlogin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tokenLoginRequest)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -243,7 +254,7 @@ public class AccountControllerTest {
         String deviceId = "testDeviceId";
 
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        accountRepository.save(Account.of(testOauthId1, Platform.KAKAO, avatar));
+        accountRepository.save(Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd"));
         SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
         token.deActive();
         tokenRepository.save(token);
@@ -265,17 +276,19 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
 
-        String request = "{\"oauthId\":\"testOauthId3\",\"platform\": \"apple\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
-                ).andExpect(status().isMultipleChoices());
+        mockMvc.perform(post("/api/account/oauth/kakao")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)
+        ).andExpect(status().isMultipleChoices());
     }
 
     @Test
@@ -284,16 +297,18 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
 
-        String request = "{\"oauthId\":\"testOauthId3\",\"platform\": \"apple\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isMultipleChoices());
     }
@@ -305,21 +320,21 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(
-                testOauthId1,
-                Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
         //when
         //then
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
         accountService.leave(avatar.getId());
 
-        String request = "{\"oauthId\":\"testOauthId1\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
 
-        mockMvc.perform(post("/api/account/oauthlogin")
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
+
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isMultipleChoices());
     }
@@ -330,23 +345,23 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(
-                testOauthId1,
-                Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
 
         accountService.leave(avatar.getId());
 
-        String request = "{\"oauthId\":\"testOauthId1\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         Clock fixedClock = Clock.fixed(ZonedDateTime.now().minusDays(8).toInstant(), ZoneId.systemDefault());
         given(clock.instant()).willReturn(fixedClock.instant());
         given(clock.getZone()).willReturn(fixedClock.getZone());
         //then
 
-        mockMvc.perform(post("/api/account/oauthlogin").contentType(MediaType.APPLICATION_JSON)
-                .content(request))
+        mockMvc.perform(post("/api/account/oauth/kakao").contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isMultipleChoices());
     }
 
@@ -357,9 +372,7 @@ public class AccountControllerTest {
         //given
         String testOauthId1 = "testOauthId1";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        Account account = Account.of(
-                testOauthId1,
-                Platform.KAKAO, avatar);
+        Account account = Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd");
 
         accountRepository.save(account);
         SessionToken sessionToken = SessionToken.of("device1", "device15", avatar);
@@ -380,15 +393,11 @@ public class AccountControllerTest {
         String testOauthId1 = "testOauthId1";
         String deviceId = "device1234";
         Avatar avatar = Avatar.of("testOauthName1", LocalDate.now(), Gender.MALE);
-        accountRepository.save(Account.of(
-                testOauthId1,
-                Platform.KAKAO,
-                avatar
-        ));
+        accountRepository.save(Account.of(testOauthId1, Platform.KAKAO, avatar, "asdasdasdasdasd"));
         SessionToken token = SessionToken.of(deviceId, "iphone15", avatar);
         tokenRepository.save(token);
 
-        httpSession.setAttribute(ConstValue.sessionName,avatar.getId());
+        httpSession.setAttribute(ConstValue.sessionName, avatar.getId());
         //when
         //then
         mockMvc.perform(get("/api/account/logout?token=" + token.getSessionTokenVaule())
@@ -403,17 +412,10 @@ public class AccountControllerTest {
     public void loginFailTestIfIdValueIsDiff() throws Exception {
         //given
 
-        doThrow(SocialLoginValidationException.class).when(validationUtil).validation(anyString(), anyString(), any());
-        String requestJson = "{\"oauthId\": \"test1234\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\" : \"asdasdasdas\"}";
+        doThrow(SocialLoginValidationException.class).when(validationUtil).kakaoLoginValidation(anyString(), anyString());
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId", "name1", LocalDate.now(), Gender.MALE, "device1", "deviceType", "accessToken1", "refreshToken1"));
         //when
-        mockMvc.perform(post("/api/account/signup")
+        mockMvc.perform(post("/api/account/signup/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )

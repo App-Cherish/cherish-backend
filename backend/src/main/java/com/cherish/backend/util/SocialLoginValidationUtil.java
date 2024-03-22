@@ -20,17 +20,8 @@ public class SocialLoginValidationUtil {
 
     private final RestTemplate restTemplate;
 
-    public void validation(String code, String accessToken, Platform platform) {
-        if (platform == Platform.KAKAO) {
-            kakaoLoginValidation(code, kakaoLoginRequest(accessToken));
-        }
-        if (platform == Platform.APPLE) {
-            appleLoginValidation(code, accessToken);
-        }
-    }
-
-    private void kakaoLoginValidation(String code, String validationCode) {
-        if (!code.equals(validationCode)) {
+    public void kakaoLoginValidation(String code, String accessToken) {
+        if (!code.equals(kakaoLoginRequest(accessToken))) {
             throw new SocialLoginValidationException();
         }
     }

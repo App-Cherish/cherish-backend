@@ -92,7 +92,7 @@ swaggerSources {
 
 openapi3 {
     servers = [
-            { url = "https://api.hoydev.com" }
+            { url = "https://cherish.hoydev.com" }
     ]
     title = "API 문서"
     description = "RestDocsWithSwagger Docs"
@@ -105,12 +105,12 @@ tasks.withType(GenerateSwaggerUI) {
     doFirst {
         def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
 
-        def securitySchemesContent = "  securitySchemes:\n" +              \
-                                                  "    APIKey:\n" +              \
-                                                  "      type: apiKey\n" +              \
-                                                  "      name: SESSION\n" +              \
-                                                  "      in: COOKIE\n" +             \
-                                                  "security:\n" +
+        def securitySchemesContent = "  securitySchemes:\n" +               \
+                                                   "    APIKey:\n" +               \
+                                                   "      type: apiKey\n" +               \
+                                                   "      name: SESSION\n" +               \
+                                                   "      in: COOKIE\n" +              \
+                                                   "security:\n" +
                 "  - APIKey: []  # Apply the security scheme here"
 
         swaggerUIFile.append securitySchemesContent

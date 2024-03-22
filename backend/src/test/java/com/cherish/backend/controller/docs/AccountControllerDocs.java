@@ -1,20 +1,23 @@
 package com.cherish.backend.controller.docs;
 
 import com.cherish.backend.controller.ConstValue;
-import com.cherish.backend.controller.dto.request.LoginRequest;
-import com.cherish.backend.controller.dto.request.SignUpRequest;
+import com.cherish.backend.controller.dto.request.KakaoLoginRequest;
+import com.cherish.backend.controller.dto.request.KakaoSignUpRequest;
 import com.cherish.backend.controller.dto.request.TokenLoginRequest;
 import com.cherish.backend.controller.dto.response.LoginResponse;
 import com.cherish.backend.domain.Avatar;
 import com.cherish.backend.domain.Gender;
 import com.cherish.backend.domain.Platform;
 import com.cherish.backend.domain.SessionToken;
+import com.cherish.backend.exception.ExistOauthIdException;
 import com.cherish.backend.exception.LeaveAccountStoreException;
 import com.cherish.backend.exception.NotExistAccountException;
 import com.cherish.backend.repositroy.AvatarRepository;
 import com.cherish.backend.service.AccountService;
 import com.cherish.backend.service.SessionTokenService;
 import com.cherish.backend.service.dto.CreateTokenDto;
+import com.cherish.backend.service.dto.LoginDto;
+import com.cherish.backend.service.dto.SignUpDto;
 import com.cherish.backend.util.SocialLoginValidationUtil;
 import com.epages.restdocs.apispec.ResourceSnippetParameters;
 import com.epages.restdocs.apispec.Schema;
@@ -93,21 +96,46 @@ public class AccountControllerDocs {
         session = new MockHttpSession();
     }
 
+    private String kakaoLoginRequestToString(KakaoLoginRequest kakaoLoginRequest) {
+        return "{" +
+                "\"oauthId\":\"" + kakaoLoginRequest.getOauthId() + "\"," +
+                "\"platform\":\"" + kakaoLoginRequest.getPlatform().getValue() + "\"," +
+                "\"deviceId\":\"" + kakaoLoginRequest.getDeviceId() + "\"," +
+                "\"deviceType\":\"" + kakaoLoginRequest.getDeviceType() + "\"," +
+                "\"accessToken\":\"" + kakaoLoginRequest.getAccessToken() + "\"," +
+                "\"refreshToken\":\"" + kakaoLoginRequest.getRefreshToken() + "\"" +
+                "}";
+    }
+
+    private String kakaoSignUpRequestToString(KakaoSignUpRequest kakaoSignUpRequest) {
+        return "{" +
+                "\"oauthId\":\"" + kakaoSignUpRequest.getOauthId() + "\"," +
+                "\"name\":\"" + kakaoSignUpRequest.getName() + "\"," +
+                "\"birth\": \"" + kakaoSignUpRequest.getBirth() + "\"," +
+                "\"gender\" : \"" + kakaoSignUpRequest.getGender().getValue() + "\"," +
+                "\"deviceId\" : \"" + kakaoSignUpRequest.getDeviceId() + "\"," +
+                "\"deviceType\": \"" + kakaoSignUpRequest.getDeviceType() + "\"," +
+                "\"accessToken\" : \"" + kakaoSignUpRequest.getAccessToken() + "\"," +
+                "\"refreshToken\" : \"" + kakaoSignUpRequest.getRefreshToken() + "\"" +
+                "}";
+    }
+
 
     @Test
     @DisplayName("[DOCS]oauth 로그인 기능 성공한 요청")
     public void loginDocsSuccess() throws Exception {
         //given
-        given(accountService.oauthLogin(any(LoginRequest.class))).willReturn(1L);
+        given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse("tokeIdexample", LocalDateTime.now()));
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
-        String request = "{\"oauthId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
 
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isOk())
                 .andDo(document("oauth 성공하는 경우",
@@ -122,9 +150,13 @@ public class AccountControllerDocs {
                                         fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
                                         fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
                                         fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
+                                        fieldWithPath("refreshToken").type("String").description("소셜 로그인시에 받은 refresh Token을 넣어주세요."),
                                         fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
                                         fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
-                                        )
+                                )
+                                .responseFields(
+                                        fieldWithPath("tokenId").type("String").description("토큰 아이디시에 사용하는 토큰 값 입니다.")
+                                )
                                 .build())));
 
     }
@@ -133,15 +165,17 @@ public class AccountControllerDocs {
     @DisplayName("[DOCS]oauth 로그인 회원 탈퇴 이후 일주일 이내")
     public void loginDocsActivateSuccess() throws Exception {
         //given
-        given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(LeaveAccountStoreException.class);
-        String request = "{\"oauthId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        given(accountService.oauthLogin(any(LoginDto.class))).willThrow(LeaveAccountStoreException.class);
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
 
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isMultipleChoices())
                 .andDo(document("oauth 회원탈퇴 이후 일주일 이내인 경우",
@@ -156,6 +190,7 @@ public class AccountControllerDocs {
                                         fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
                                         fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
                                         fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
+                                        fieldWithPath("refreshToken").type("String").description("소셜 로그인시에 받은 refresh Token을 넣어주세요."),
                                         fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
                                         fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
                                 )
@@ -167,15 +202,17 @@ public class AccountControllerDocs {
     @DisplayName("[DOCS]oauth 로그인 기능 실패한 요청 - account가 없는 경우, 플랫폼이 다른 경우, 회원탈퇴 이후 일주일 인 경우")
     public void loginDocsFail1() throws Exception {
         //given
-        given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(NotExistAccountException.class);
-        String request = "{\"oauthId\":\"testOauthIdnone\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        given(accountService.oauthLogin(any(LoginDto.class))).willThrow(NotExistAccountException.class);
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
 
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isMultipleChoices())
                 .andDo(document("oauth 실패하는 경우 - 입력한 OAuth ID가 없는 경우, 플랫폼이 다른 경우",
@@ -194,15 +231,17 @@ public class AccountControllerDocs {
     @DisplayName("[DOCS]oauth 로그인 기능 실패한 요청 - 회원탈퇴 이후 일주일 이내인 경우")
     public void loginDocsPlatformFail1() throws Exception {
         //given
-        given(accountService.oauthLogin(any(LoginRequest.class))).willThrow(new LeaveAccountStoreException());
-        String request = "{\"oauthId\":\"testId\",\"platform\": \"kakao\",\"accessToken\":\"asdasdasdasdas\",\"deviceId\":\"iphone1234\",\"deviceType\":\"iphon15\"}";
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        given(accountService.oauthLogin(any(LoginDto.class))).willThrow(new LeaveAccountStoreException());
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
 
         //when
         //then
-        mockMvc.perform(post("/api/account/oauthlogin")
+        mockMvc.perform(post("/api/account/oauth/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(request)
+                        .content(requestJson)
                 )
                 .andExpect(status().isMultipleChoices())
                 .andDo(document("oauth 계정 삭제 후 복구 - 계정 삭제 후 일주일 이내 인 경우",
@@ -230,7 +269,6 @@ public class AccountControllerDocs {
                         .content(objectMapper.writeValueAsString(tokenLoginRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
-
                 .andExpect(status().isOk())
                 .andDo(document("토큰으로 로그인 성공1",
                         preprocessRequest(prettyPrint()),
@@ -241,7 +279,7 @@ public class AccountControllerDocs {
                                 .description("토큰 로그인 성공하는 경우 입니다..")
                                 .requestFields(
                                         fieldWithPath("token").type("String").description("발급 받은 토큰 값을 입력해주세요")
-                                        ).build())
+                                ).build())
                 ));
     }
 
@@ -250,11 +288,12 @@ public class AccountControllerDocs {
     public void tokenLoginFailTest1() throws Exception {
         //given
         SessionToken sessionToken = SessionToken.of("testId", "testDevice", Avatar.of("testName", LocalDate.now(), Gender.MALE));
-        TokenLoginRequest tokenLoginRequest = new TokenLoginRequest(sessionToken.getSessionTokenVaule());
+        TokenLoginRequest tokenLoginRequest = new TokenLoginRequest();
         given(sessionTokenService.tokenLogin(eq(tokenLoginRequest))).willThrow(new IllegalStateException("존재하지 않는 토큰입니다."));
         //when
         mockMvc.perform(post("/api/account/tokenlogin")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(tokenLoginRequest))
                 )
                 .andExpect(status().isBadRequest())
                 .andDo(document("토큰 로그인 존재하지 않는 토큰이였던 경우 - 실패케이스1",
@@ -271,27 +310,18 @@ public class AccountControllerDocs {
     public void signUpSuccessTest() throws Exception {
         //given
         SessionToken sessionToken = SessionToken.of("testId", "testDevice", Avatar.of("testName", LocalDate.now(), Gender.MALE));
-        String requestJson = "{\"oauthId\": \"" + "test1234" + "\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\": \"카카오에서 발급받은 아이디\"" +
-                "}";
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
 
-        given(accountService.signUp(any(SignUpRequest.class))).willReturn(1L);
+        given(accountService.signUp(any(SignUpDto.class), any(Platform.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse(sessionToken.getSessionTokenVaule(), sessionToken.getExpired_date()));
-        doNothing().when(validationUtil).validation(anyString(), anyString(), any());
+        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
 
         //when
         //then
-        mockMvc.perform(post("/api/account/signup")
+        mockMvc.perform(post("/api/account/signup/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("회원가입 성공",
                         preprocessRequest(prettyPrint()),
@@ -301,45 +331,42 @@ public class AccountControllerDocs {
                                 .summary("회원가입 성공")
                                 .description("정상적인 요청으로 회원가입이 성공하는 경우")
                                 .requestSchema(Schema.schema("Sign Up Scheme"))
-                                                .
-                                                requestFields(
-                                                        fieldWithPath("oauthId").type("String").description("oauthId를 넣어주세요(카카오 애플 상관없이)"),
-                                                        fieldWithPath("platform").type("String").description("oauthId를 넣어주세요(kakao or apple : 소문자 입니다.)"),
-                                                        fieldWithPath("name").type("String").description("사용자의 이름을 넣어주세요."),
-                                                        fieldWithPath("birth").type("String").description("사용자의 생일을 넣어주세요 (yyyy-mm-dd) ex)1970-12-31"),
-                                                        fieldWithPath("gender").type("String").description("성별을 넣어주세요(mail or female : 소문자 입니다.)"),
-                                                        fieldWithPath("deviceId").type("String").description("deviceId를 입력해주세요."),
-                                                        fieldWithPath("deviceType").type("String").description("deviceType을 입력해주세요."),
-                                                        fieldWithPath("accessToken").type("String").description("oauth로그인 서버에서 받은 id값을 입력해주세요.")
-                                                )
-                                                .build())));
+                                        .
+                                requestFields(
+                                        fieldWithPath("oauthId").type("String").description("oauthId를 넣어주세요(카카오 애플 상관없이)"),
+                                        fieldWithPath("name").type("String").description("사용자의 이름을 넣어주세요."),
+                                        fieldWithPath("birth").type("String").description("사용자의 생일을 넣어주세요 (yyyy-mm-dd) ex)1970-12-31"),
+                                        fieldWithPath("gender").type("String").description("성별을 넣어주세요(mail or female : 소문자 입니다.)"),
+                                        fieldWithPath("deviceId").type("String").description("deviceId를 입력해주세요."),
+                                        fieldWithPath("deviceType").type("String").description("deviceType을 입력해주세요."),
+                                        fieldWithPath("accessToken").type("String").description("accessToken을 입력해주세요."),
+                                        fieldWithPath("refreshToken").type("String").description("소셜 로그인 서버에서 받은 refreshToken 값을 입력해주세요")
+                                )
+                                .responseFields(
+                                        fieldWithPath("tokenId").type("String").description("토큰 아이디시에 사용하는 토큰 값 입니다.")
+                                )
+                                .build())));
     }
 
     @Test
     @DisplayName("[DOCS] 회원가입 실패 테스트 - 이미 존재하는 OauthID ")
     public void signUpFailTest1() throws Exception {
         //given
-        String requestJson = "{\"oauthId\": \"" + "test1234" + "\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"}";
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
         SessionToken sessionToken = SessionToken.of("testId", "testDevice", Avatar.of("testName", LocalDate.now(), Gender.MALE));
 
 
-        given(accountService.signUp(any(SignUpRequest.class))).willThrow(new IllegalArgumentException("이미 존재하는 oauthId입니다."));
+        given(accountService.signUp(any(SignUpDto.class), any(Platform.class))).willThrow(new ExistOauthIdException());
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse(sessionToken.getSessionTokenVaule(), sessionToken.getExpired_date()));
 
         //when
         //then
-        mockMvc.perform(post("/api/account/signup")
+        mockMvc.perform(post("/api/account/signup/kakao")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
-                .andExpect(status().isBadRequest())
                 .andDo(print())
+                .andExpect(status().isBadRequest())
                 .andDo(document("회원가입이 실패하는 경우 - 이미 가입된 oauth ID",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -380,7 +407,7 @@ public class AccountControllerDocs {
     public void leaveTest() throws Exception {
         //given
 
-        session.setAttribute(ConstValue.sessionName,1L);
+        session.setAttribute(ConstValue.sessionName, 1L);
 
         doNothing().when(accountService).leave(anyLong());
         //when
@@ -403,18 +430,12 @@ public class AccountControllerDocs {
     @DisplayName("[DOCS] 회원탈퇴 계정 복구하기 성공하는 경우")
     public void ActivateTest() throws Exception {
         //given
-        session.setAttribute(ConstValue.sessionName,1L);
-        given(accountService.oauthLogin(any(LoginRequest.class))).willReturn(1L);
+        session.setAttribute(ConstValue.sessionName, 1L);
+        given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse("asdasdasd", LocalDateTime.now()));
-        String requestJson = "{\"oauthId\": \"" + "test1234" + "\"," +
-                "\"name\":\"testid\"," +
-                "\"platform\":\"kakao\"," +
-                "\"birth\": \"2022-10-23\"," +
-                "\"gender\" : \"male\", " +
-                "\"deviceId\" : \"iphoneId\"," +
-                "\"deviceType\": \"ihpone15\"," +
-                "\"accessToken\": \"카카오에서 발급받은 아이디\"" +
-                "}";
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+
+        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
         //test
         mockMvc.perform(post("/api/account/activate")
@@ -431,8 +452,6 @@ public class AccountControllerDocs {
                                 .build()
                         )));
     }
-
-
 
 
 }

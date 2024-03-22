@@ -41,7 +41,9 @@ class AccountRepositoryTest {
         account = Account.builder()
                 .oauthId(oauthId)
                 .platform(Platform.KAKAO)
-                .avatar(avatar).build();
+                .avatar(avatar)
+                .refreshToken("refreshtoken1")
+                .build();
 
         accountRepository.save(account);
         avatarRepository.save(avatar);

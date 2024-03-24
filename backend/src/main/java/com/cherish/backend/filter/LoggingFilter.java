@@ -47,9 +47,10 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     private static void logPayload(String prefix, String contentType, InputStream inputStream) throws IOException {
         boolean visible = isVisible(MediaType.valueOf(contentType == null ? "application/json" : contentType));
+
         if (visible) {
             byte[] content = StreamUtils.copyToByteArray(inputStream);
-            if (content.length > 0) {
+            if (content.length > 0 && content.length < 1000) {
                 String contentString = new String(content);
                 log.info("{} Payload: {}", prefix, contentString);
             }
@@ -82,6 +83,7 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
         long startTime = System.currentTimeMillis();
         queryCountInspector.startCounter();
         MDC.put("traceId", UUID.randomUUID().toString());

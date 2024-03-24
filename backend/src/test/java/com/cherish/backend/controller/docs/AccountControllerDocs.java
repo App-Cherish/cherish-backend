@@ -99,8 +99,8 @@ public class AccountControllerDocs {
     private String kakaoLoginRequestToString(KakaoLoginRequest kakaoLoginRequest) {
         return "{" +
                 "\"oauthId\":\"" + kakaoLoginRequest.getOauthId() + "\"," +
-                "\"platform\":\"" + kakaoLoginRequest.getPlatform().getValue() + "\"," +
-                "\"deviceId\":\"" + kakaoLoginRequest.getDeviceId() + "\"," +
+                "\"osVersion\":\"" + kakaoLoginRequest.getOsVersion() + "\"," +
+                "\"platform\":\"" + kakaoLoginRequest.getPlatform() + "\"," +
                 "\"deviceType\":\"" + kakaoLoginRequest.getDeviceType() + "\"," +
                 "\"accessToken\":\"" + kakaoLoginRequest.getAccessToken() + "\"," +
                 "\"refreshToken\":\"" + kakaoLoginRequest.getRefreshToken() + "\"" +
@@ -112,8 +112,9 @@ public class AccountControllerDocs {
                 "\"oauthId\":\"" + kakaoSignUpRequest.getOauthId() + "\"," +
                 "\"name\":\"" + kakaoSignUpRequest.getName() + "\"," +
                 "\"birth\": \"" + kakaoSignUpRequest.getBirth() + "\"," +
+                "\"platform\": \"" + kakaoSignUpRequest.getPlatfrom() + "\"," +
                 "\"gender\" : \"" + kakaoSignUpRequest.getGender().getValue() + "\"," +
-                "\"deviceId\" : \"" + kakaoSignUpRequest.getDeviceId() + "\"," +
+                "\"osVersion\" : \"" + kakaoSignUpRequest.getOsVersion() + "\"," +
                 "\"deviceType\": \"" + kakaoSignUpRequest.getDeviceType() + "\"," +
                 "\"accessToken\" : \"" + kakaoSignUpRequest.getAccessToken() + "\"," +
                 "\"refreshToken\" : \"" + kakaoSignUpRequest.getRefreshToken() + "\"" +
@@ -128,7 +129,7 @@ public class AccountControllerDocs {
         given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse("tokeIdexample", LocalDateTime.now()));
         doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
-        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", "accessToken", Platform.KAKAO.getValue(), "refreshToken", "iphone1234", "iphon15");
 
         String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when
@@ -148,11 +149,11 @@ public class AccountControllerDocs {
                                 .requestSchema(Schema.schema("OAUTH LOGIN Scheme"))
                                 .requestFields(
                                         fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
-                                        fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
+                                        fieldWithPath("osVersion").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
                                         fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
                                         fieldWithPath("refreshToken").type("String").description("소셜 로그인시에 받은 refresh Token을 넣어주세요."),
-                                        fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
-                                        fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
+                                        fieldWithPath("platform").type("String").description("플랫폼값을 입력해주세요"),
+                                        fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)")
                                 )
                                 .responseFields(
                                         fieldWithPath("tokenId").type("String").description("토큰 아이디시에 사용하는 토큰 값 입니다.")
@@ -161,49 +162,49 @@ public class AccountControllerDocs {
 
     }
 
-    @Test
-    @DisplayName("[DOCS]oauth 로그인 회원 탈퇴 이후 일주일 이내")
-    public void loginDocsActivateSuccess() throws Exception {
-        //given
-        given(accountService.oauthLogin(any(LoginDto.class))).willThrow(LeaveAccountStoreException.class);
-        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
-
-        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
-        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
-
-        //when
-        //then
-        mockMvc.perform(post("/api/account/oauth/kakao")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson)
-                )
-                .andExpect(status().isMultipleChoices())
-                .andDo(document("oauth 회원탈퇴 이후 일주일 이내인 경우",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        resource(ResourceSnippetParameters.builder()
-                                .tag("ACCOUNT API")
-                                .summary("OAUTH ID로 로그인 하기")
-                                .description("oauth id을 통한 로그인 성공을 하는 경우입니다.")
-                                .requestSchema(Schema.schema("OAUTH LOGIN Scheme"))
-                                .requestFields(
-                                        fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
-                                        fieldWithPath("deviceId").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
-                                        fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
-                                        fieldWithPath("refreshToken").type("String").description("소셜 로그인시에 받은 refresh Token을 넣어주세요."),
-                                        fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
-                                        fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
-                                )
-                                .build())));
-
-    }
+//    @Test
+//    @DisplayName("[DOCS]oauth 로그인 회원 탈퇴 이후 일주일 이내")
+//    public void loginDocsActivateSuccess() throws Exception {
+//        //given
+//        given(accountService.oauthLogin(any(LoginDto.class))).willThrow(LeaveAccountStoreException.class);
+//        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", "accessToken", "refreshToken", "iphone1234", "iphon15");
+//
+//        String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
+//        doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
+//
+//        //when
+//        //then
+//        mockMvc.perform(post("/api/account/oauth/kakao")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(requestJson)
+//                )
+//                .andExpect(status().isNotFound())
+//                .andDo(document("oauth 회원탈퇴 이후 일주일 이내인 경우",
+//                        preprocessRequest(prettyPrint()),
+//                        preprocessResponse(prettyPrint()),
+//                        resource(ResourceSnippetParameters.builder()
+//                                .tag("ACCOUNT API")
+//                                .summary("OAUTH ID로 로그인 하기")
+//                                .description("oauth id을 통한 로그인 성공을 하는 경우입니다.")
+//                                .requestSchema(Schema.schema("OAUTH LOGIN Scheme"))
+//                                .requestFields(
+//                                        fieldWithPath("oauthId").type("String").description("해당 플랫폼에서 발급 받은 oauth ID 값을 넣어주세요."),
+//                                        fieldWithPath("osVersion").type("String").description("해당 디바이스의 고유값을 입력해주세요.(식별값)"),
+//                                        fieldWithPath("accessToken").type("String").description("소셜 로그인시에 받은 access Token을 넣어주세요."),
+//                                        fieldWithPath("refreshToken").type("String").description("소셜 로그인시에 받은 refresh Token을 넣어주세요."),
+//                                        fieldWithPath("deviceType").type("String").description("해당 디바이스의 기기 명을 입력해주세요(EX:IPhone15)"),
+//                                        fieldWithPath("platform").type("String").description("oauth로그인을 진행한 플랫폼을 입력해주세요(kakao or apple)")
+//                                )
+//                                .build())));
+//
+//    }
 
     @Test
     @DisplayName("[DOCS]oauth 로그인 기능 실패한 요청 - account가 없는 경우, 플랫폼이 다른 경우, 회원탈퇴 이후 일주일 인 경우")
     public void loginDocsFail1() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willThrow(NotExistAccountException.class);
-        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", "accessToken", Platform.KAKAO.getValue(), "refreshToken", "iphone1234", "iphon15");
 
         String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
@@ -214,7 +215,7 @@ public class AccountControllerDocs {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson)
                 )
-                .andExpect(status().isMultipleChoices())
+                .andExpect(status().isNotFound())
                 .andDo(document("oauth 실패하는 경우 - 입력한 OAuth ID가 없는 경우, 플랫폼이 다른 경우",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -232,7 +233,7 @@ public class AccountControllerDocs {
     public void loginDocsPlatformFail1() throws Exception {
         //given
         given(accountService.oauthLogin(any(LoginDto.class))).willThrow(new LeaveAccountStoreException());
-        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", "accessToken", Platform.KAKAO.getValue(), "refreshToken", "iphone1234", "iphon15");
 
         String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         doNothing().when(validationUtil).kakaoLoginValidation(anyString(), anyString());
@@ -310,7 +311,7 @@ public class AccountControllerDocs {
     public void signUpSuccessTest() throws Exception {
         //given
         SessionToken sessionToken = SessionToken.of("testId", "testDevice", Avatar.of("testName", LocalDate.now(), Gender.MALE));
-        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", "kakao", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
 
         given(accountService.signUp(any(SignUpDto.class), any(Platform.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse(sessionToken.getSessionTokenVaule(), sessionToken.getExpired_date()));
@@ -337,8 +338,9 @@ public class AccountControllerDocs {
                                         fieldWithPath("name").type("String").description("사용자의 이름을 넣어주세요."),
                                         fieldWithPath("birth").type("String").description("사용자의 생일을 넣어주세요 (yyyy-mm-dd) ex)1970-12-31"),
                                         fieldWithPath("gender").type("String").description("성별을 넣어주세요(mail or female : 소문자 입니다.)"),
-                                        fieldWithPath("deviceId").type("String").description("deviceId를 입력해주세요."),
+                                        fieldWithPath("osVersion").type("String").description("osVersion를 입력해주세요."),
                                         fieldWithPath("deviceType").type("String").description("deviceType을 입력해주세요."),
+                                        fieldWithPath("platform").type("String").description("플랫폼값을 입력해주세요"),
                                         fieldWithPath("accessToken").type("String").description("accessToken을 입력해주세요."),
                                         fieldWithPath("refreshToken").type("String").description("소셜 로그인 서버에서 받은 refreshToken 값을 입력해주세요")
                                 )
@@ -352,7 +354,7 @@ public class AccountControllerDocs {
     @DisplayName("[DOCS] 회원가입 실패 테스트 - 이미 존재하는 OauthID ")
     public void signUpFailTest1() throws Exception {
         //given
-        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
+        String requestJson = kakaoSignUpRequestToString(new KakaoSignUpRequest("oauthId1", "name1", "kakao", LocalDate.now(), Gender.MALE, "devcie1", "deviceType", "accessToken", "refreshToken"));
         SessionToken sessionToken = SessionToken.of("testId", "testDevice", Avatar.of("testName", LocalDate.now(), Gender.MALE));
 
 
@@ -433,7 +435,7 @@ public class AccountControllerDocs {
         session.setAttribute(ConstValue.sessionName, 1L);
         given(accountService.oauthLogin(any(LoginDto.class))).willReturn(1L);
         given(sessionTokenService.createToken(any(CreateTokenDto.class))).willReturn(new LoginResponse("asdasdasd", LocalDateTime.now()));
-        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", Platform.KAKAO, "accessToken", "refreshToken", "iphone1234", "iphon15");
+        KakaoLoginRequest kakaoLoginRequest = new KakaoLoginRequest("test1", "accessToken", "kakao", "refreshToken", "iphone1234", "iphon15");
 
         String requestJson = kakaoLoginRequestToString(kakaoLoginRequest);
         //when

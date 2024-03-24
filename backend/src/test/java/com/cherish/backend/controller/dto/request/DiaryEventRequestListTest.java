@@ -19,39 +19,28 @@ class DiaryEventRequestListTest {
     DiaryEventRequestList diaryEventRequestList;
     Avatar avatar = Avatar.of("avatar1", LocalDate.now(), Gender.FEMALE);
     BackUp backUp = BackUp.of("os99", "iphone99", avatar);
-
+    Diary diary1 = Diary.of(DiaryKind.FREE, "clientId1", "title1", "content1", LocalDateTime.now(), avatar, backUp);
+    DiaryEventRequest editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
+    DiaryEventRequest deleteExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(4L));
+    Diary diary2 = Diary.of(DiaryKind.FREE, "clientId2", "title2", "content2", LocalDateTime.now(), avatar, backUp);
+    DiaryEventRequest editExistEventRequest2 = new DiaryEventRequest(diary2.getClientId(), diary2.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary2.getClientWritingDate().plusHours(1L));
+    Diary diary3 = Diary.of(DiaryKind.FREE, "clientId3", "title3", "content3", LocalDateTime.now(), avatar, backUp);
+    DiaryEventRequest editExistEventRequest3 = new DiaryEventRequest(diary3.getClientId(), diary3.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary3.getClientWritingDate().plusHours(1L));
     DiaryEventRequest createEventRequest1 = new DiaryEventRequest(createClientId(), LocalDateTime.now(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now());
     DiaryEventRequest createEventRequest2 = new DiaryEventRequest(createClientId(), LocalDateTime.now().plusHours(1L), "title2", "content2", DiaryKind.FREE, LocalDateTime.now());
     DiaryEventRequest createEventRequest3 = new DiaryEventRequest(createClientId(), LocalDateTime.now().plusHours(2L), "title3", "content3", DiaryKind.FREE, LocalDateTime.now());
-
-
-    DiaryEventRequest editEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, createEventRequest1.getClientWritingDate().plusHours(1L));
-    DiaryEventRequest editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle1_2", "editcontent1_1", DiaryKind.QUESTION, createEventRequest2.getClientWritingDate().plusHours(2L));
-    DiaryEventRequest editEventRequest3 = new DiaryEventRequest(createEventRequest3.getClientId(), createEventRequest3.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest3.getClientWritingDate().plusHours(3L));
-    DiaryEventRequest editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, createEventRequest1.getClientWritingDate().plusHours(2L));
-    DiaryEventRequest editEventRequest1_Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_LAST", "editcontent1_LAST", DiaryKind.QUESTION, createEventRequest1.getClientWritingDate().plusHours(3L));
-    DiaryEventRequest editEventRequest2_1 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2_1", "editcontent2_1", DiaryKind.QUESTION, createEventRequest2.getClientWritingDate().plusHours(14L));
-    DiaryEventRequest editEventRequest2_Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle1_LAST", "editcontent2_LAST", DiaryKind.QUESTION, createEventRequest2.getClientWritingDate().plusHours(15L));
-
-
-    DiaryEventRequest deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest1.getClientWritingDate().plusHours(4L));
-    DiaryEventRequest deleteEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest1.getClientWritingDate().plusHours(5L));
-
+    DiaryEventRequest editEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, createEventRequest1.getWritingDate().plusHours(1L));
+    DiaryEventRequest editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle1_2", "editcontent1_1", DiaryKind.QUESTION, createEventRequest2.getWritingDate().plusHours(2L));
+    DiaryEventRequest editEventRequest3 = new DiaryEventRequest(createEventRequest3.getClientId(), createEventRequest3.getWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest3.getWritingDate().plusHours(3L));
+    DiaryEventRequest editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, createEventRequest1.getWritingDate().plusHours(2L));
+    DiaryEventRequest editEventRequest1_Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_LAST", "editcontent1_LAST", DiaryKind.QUESTION, createEventRequest1.getWritingDate().plusHours(3L));
+    DiaryEventRequest editEventRequest2_1 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2_1", "editcontent2_1", DiaryKind.QUESTION, createEventRequest2.getWritingDate().plusHours(14L));
+    DiaryEventRequest editEventRequest2_Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle1_LAST", "editcontent2_LAST", DiaryKind.QUESTION, createEventRequest2.getWritingDate().plusHours(15L));
+    DiaryEventRequest deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest1.getWritingDate().plusHours(4L));
+    DiaryEventRequest deleteEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, createEventRequest1.getWritingDate().plusHours(5L));
     List<DiaryEventRequest> createList = new ArrayList<>();
     List<DiaryEventRequest> editList = new ArrayList<>();
     List<DiaryEventRequest> deleteList = new ArrayList<>();
-
-
-    Diary diary1 = Diary.of(DiaryKind.FREE, "clientId1", "title1", "content1", LocalDateTime.now(), avatar, backUp);
-    Diary diary2 = Diary.of(DiaryKind.FREE, "clientId2", "title2", "content2", LocalDateTime.now(), avatar, backUp);
-    Diary diary3 = Diary.of(DiaryKind.FREE, "clientId3", "title3", "content3", LocalDateTime.now(), avatar, backUp);
-
-    DiaryEventRequest editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
-    DiaryEventRequest editExistEventRequest2 = new DiaryEventRequest(diary2.getClientId(), diary2.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary2.getClientWritingDate().plusHours(1L));
-    DiaryEventRequest editExistEventRequest3 = new DiaryEventRequest(diary3.getClientId(), diary3.getClientWritingDate(), "existedittitle1_1", "existeditcontent1_1", DiaryKind.QUESTION, diary3.getClientWritingDate().plusHours(1L));
-    DiaryEventRequest deleteExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(4L));
-
-
     List<Diary> diaryList = new ArrayList<>();
 
     @BeforeEach

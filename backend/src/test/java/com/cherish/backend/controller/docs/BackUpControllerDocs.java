@@ -35,6 +35,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(RestDocumentationExtension.class)
@@ -127,13 +129,13 @@ public class BackUpControllerDocs {
         createEventRequest1 = new DiaryEventRequest("clientId1", LocalDateTime.now(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest2 = new DiaryEventRequest("clientId2", LocalDateTime.now().plusHours(1L), "title2", "content2", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest3 = new DiaryEventRequest("clientId3", LocalDateTime.now().plusHours(2L), "title3", "content3", DiaryKind.FREE, LocalDateTime.now());
-        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
-        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
-        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
+        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
+        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
+        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
 
-        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
-        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
-        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
+        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
+        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
+        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
 
         editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
         editExistEventRequest1_1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_2", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(2L));
@@ -149,8 +151,8 @@ public class BackUpControllerDocs {
                 "\"diaryKind\":\"" + diaryEventRequest.getDiaryKind().getValue() + "\"," +
                 "\"title\":\"" + diaryEventRequest.getTitle() + "\"," +
                 "\"content\":\"" + diaryEventRequest.getContent() + "\"," +
-                "\"clientWritingDate\":\"" + diaryEventRequest.getClientWritingDate() + "\"," +
-                "\"eventDate\":\"" + diaryEventRequest.getEventDate() + "\"" +
+                "\"writingDate\":\"" + diaryEventRequest.getWritingDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\"," +
+                "\"eventDate\":\"" + diaryEventRequest.getEventDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\"" +
                 "}";
     }
 
@@ -195,6 +197,9 @@ public class BackUpControllerDocs {
                 json += diaryEventRequestToString(diaryEventRequestList.getDeleteEventList().get(i)) + ",";
             }
         }
+
+        System.out.println("print:" + json);
+
         return json + "\"deviceType\":\"" + diaryEventRequestList.getDeviceType() + "\"," +
                 "\"osVersion\":\"" + diaryEventRequestList.getOsVersion() + "\"" +
                 "}";
@@ -231,6 +236,7 @@ public class BackUpControllerDocs {
                         .session(session)
                         .content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("일기 저장하기",
                         preprocessRequest(prettyPrint()),
@@ -244,19 +250,19 @@ public class BackUpControllerDocs {
                                         fieldWithPath("createEventList[].clientId").type("String").description("일기의 클라이언트 ID 저장값 입니다."),
                                         fieldWithPath("createEventList[].content").type("String").description("일기의 내용 입니다."),
                                         fieldWithPath("createEventList[].diaryKind").type("String").description("일기의 형식 입니다."),
-                                        fieldWithPath("createEventList[].clientWritingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
+                                        fieldWithPath("createEventList[].writingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
                                         fieldWithPath("createEventList[].eventDate").type("String").description("일기의 이벤트가 일어난 시간입니다.."),
                                         fieldWithPath("editEventList[].clientId").type("String").description("일기의 클라이언트 ID 저장값 입니다."),
                                         fieldWithPath("editEventList[].title").type("String").description("일기의 제목 입니다."),
                                         fieldWithPath("editEventList[].content").type("String").description("일기의 내용 입니다."),
                                         fieldWithPath("editEventList[].diaryKind").type("String").description("일기의 형식 입니다."),
-                                        fieldWithPath("editEventList[].clientWritingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
+                                        fieldWithPath("editEventList[].writingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
                                         fieldWithPath("editEventList[].eventDate").type("String").description("일기의 이벤트가 일어난 시간입니다.."),
                                         fieldWithPath("deleteEventList[].clientId").type("String").description("일기의 클라이언트 ID 저장값 입니다."),
                                         fieldWithPath("deleteEventList[].title").type("String").description("일기의 제목 입니다."),
                                         fieldWithPath("deleteEventList[].content").type("String").description("일기의 내용 입니다."),
                                         fieldWithPath("deleteEventList[].diaryKind").type("String").description("일기의 형식 입니다."),
-                                        fieldWithPath("deleteEventList[].clientWritingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
+                                        fieldWithPath("deleteEventList[].writingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
                                         fieldWithPath("deleteEventList[].eventDate").type("String").description("일기의 이벤트가 일어난 시간입니다.."),
                                         fieldWithPath("osVersion").type("String").description("기기 OS Version을 입력해주세요."),
                                         fieldWithPath("deviceType").type("String").description("기기의 이름을 입력해주시요")
@@ -332,7 +338,7 @@ public class BackUpControllerDocs {
         list.add(response2);
         list.add(response3);
 
-        given(backUpService.restoreDiary(avatar.getId(), backUp.getId())).willReturn(new RestoreDiaryResponse(list, backUp.getId(), LocalDateTime.now(), 9, "ios99", "os1"));
+        given(backUpService.restoreDiary(avatar.getId(), backUp.getId())).willReturn(new RestoreDiaryResponse(list, new BackUpHistoryResponse(backUp.getId(), LocalDateTime.now(), "ios99", "os1", 9)));
         //when
         //then
         mockMvc.perform(get("/api/backup/restore?backupId=" + backUp.getId())
@@ -349,16 +355,16 @@ public class BackUpControllerDocs {
                                         parameterWithName("backupId").type(SimpleType.STRING).description("backupId를 입력해주세요.")
                                 )
                                 .responseFields(
-                                        fieldWithPath("diaryList.[].clientId").type("String").description("일기의 클라이언트 ID 저장값 입니다."),
-                                        fieldWithPath("diaryList.[].title").type("String").description("일기의 제목 입니다."),
-                                        fieldWithPath("diaryList.[].content").type("String").description("일기의 내용 입니다."),
-                                        fieldWithPath("diaryList.[].diaryKind").type("String").description("일기의 형식 입니다."),
-                                        fieldWithPath("diaryList.[].clientWritingDate").type("String").description("일기의 클라이언트 저장 시간 입니다."),
-                                        fieldWithPath("backUpId").type("String").description("일기가 저장되어 있는 최신 백업 아이디입니다."),
-                                        fieldWithPath("date").type("String").description("저장된 시간 입니다."),
-                                        fieldWithPath("deviceModel").type("String").description("기기 모델명 입니다."),
-                                        fieldWithPath("osVersion").type("String").description("osVersion입니다."),
-                                        fieldWithPath("count").type("number").description("저장된 일기의 수 입니다.")
+                                        fieldWithPath("recordList.[].clientId").type("String").description("일기의 클라이언트 ID 저장값 입니다."),
+                                        fieldWithPath("recordList.[].title").type("String").description("일기의 제목 입니다."),
+                                        fieldWithPath("recordList.[].content").type("String").description("일기의 내용 입니다."),
+                                        fieldWithPath("recordList.[].diaryKind").type("String").description("일기의 형식 입니다."),
+                                        fieldWithPath("recordList.[].date").type("String").description("일기의 클라이언트 저장 시간 입니다."),
+                                        fieldWithPath("backupData.backUpId").type("String").description("일기가 저장되어 있는 최신 백업 아이디입니다."),
+                                        fieldWithPath("backupData.date").type("String").description("저장된 시간 입니다."),
+                                        fieldWithPath("backupData.deviceModel").type("String").description("기기 모델명 입니다."),
+                                        fieldWithPath("backupData.osVersion").type("String").description("osVersion입니다."),
+                                        fieldWithPath("backupData.count").type("number").description("저장된 일기의 수 입니다.")
                                 ).build())));
     }
 

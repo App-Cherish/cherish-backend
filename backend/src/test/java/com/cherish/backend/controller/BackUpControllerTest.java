@@ -25,6 +25,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,7 +54,19 @@ class BackUpControllerTest {
     MockHttpSession httpSession;
 
     Avatar avatar;
-
+    @Autowired
+    EntityManager em;
+    BackUp backUp;
+    Diary diary1, diary2, diary3;
+    @Autowired
+    BackUpService backUpService;
+    @Autowired
+    BackUpRepository backUpRepository;
+    @Autowired
+    DiaryRepository diaryRepository;
+    DiaryEventRequest createEventRequest1, createEventRequest2, createEventRequest3;
+    DiaryEventRequest editEventRequest1_1, editEventRequest1_2, editEventRequest1Last;
+    DiaryEventRequest editEventRequest2, editEventRequest2Last, deleteEventRequest1, editExistEventRequest1, editExistEventRequest1_1, editExistEventRequest1_Last, editExistEventRequest2, deleteExistEventRequest1;
 
     @BeforeEach
     void setUp() {
@@ -87,14 +100,14 @@ class BackUpControllerTest {
         createEventRequest1 = new DiaryEventRequest("clientId1", LocalDateTime.now(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest2 = new DiaryEventRequest("clientId2", LocalDateTime.now().plusHours(1L), "title2", "content2", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest3 = new DiaryEventRequest("clientId3", LocalDateTime.now().plusHours(2L), "title3", "content3", DiaryKind.FREE, LocalDateTime.now());
-        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
-        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
-        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
+        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
+        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
+        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
 
-        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
-        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
+        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
+        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
 
-        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
+        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
 
         editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
         editExistEventRequest1_1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_2", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(2L));
@@ -104,35 +117,14 @@ class BackUpControllerTest {
         deleteExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitleLAST", "editcontentLAST", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(4L));
     }
 
-    @Autowired
-    EntityManager em;
-
-    BackUp backUp;
-
-    Diary diary1, diary2, diary3;
-
-    @Autowired
-    BackUpService backUpService;
-
-    @Autowired
-    BackUpRepository backUpRepository;
-
-    @Autowired
-    DiaryRepository diaryRepository;
-
-    DiaryEventRequest createEventRequest1, createEventRequest2, createEventRequest3;
-    DiaryEventRequest editEventRequest1_1, editEventRequest1_2, editEventRequest1Last;
-
-    DiaryEventRequest editEventRequest2, editEventRequest2Last, deleteEventRequest1, editExistEventRequest1, editExistEventRequest1_1, editExistEventRequest1_Last, editExistEventRequest2, deleteExistEventRequest1;
-
     private String diaryEventRequestToString(DiaryEventRequest diaryEventRequest) {
         return "{" +
                 "\"clientId\":\"" + diaryEventRequest.getClientId() + "\"," +
                 "\"diaryKind\":\"" + diaryEventRequest.getDiaryKind().getValue() + "\"," +
                 "\"title\":\"" + diaryEventRequest.getTitle() + "\"," +
                 "\"content\":\"" + diaryEventRequest.getContent() + "\"," +
-                "\"clientWritingDate\":\"" + diaryEventRequest.getClientWritingDate() + "\"," +
-                "\"eventDate\":\"" + diaryEventRequest.getEventDate() + "\"" +
+                "\"writingDate\":\"" + diaryEventRequest.getWritingDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\"," +
+                "\"eventDate\":\"" + diaryEventRequest.getEventDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + "\"" +
                 "}";
     }
 
@@ -222,14 +214,14 @@ class BackUpControllerTest {
         mockMvc.perform(get("/api/backup/restore?backupId=" + backUp.getId())
                         .session(httpSession))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.diaryList[*].clientId").exists())
-                .andExpect(jsonPath("$.diaryList[*].title").exists())
-                .andExpect(jsonPath("$.diaryList[*].content").exists())
-                .andExpect(jsonPath("$.diaryList[*].diaryKind").exists())
-                .andExpect(jsonPath("$.diaryList[*].clientWritingDate").exists())
-                .andExpect(jsonPath("$.backUpId").exists())
-                .andExpect(jsonPath("$.deviceModel").exists())
-                .andExpect(jsonPath("$.osVersion").exists())
+                .andExpect(jsonPath("$.recordList[*].clientId").exists())
+                .andExpect(jsonPath("$.recordList[*].title").exists())
+                .andExpect(jsonPath("$.recordList[*].content").exists())
+                .andExpect(jsonPath("$.recordList[*].diaryKind").exists())
+                .andExpect(jsonPath("$.recordList[*].date").exists())
+                .andExpect(jsonPath("$.backupData.backUpId").exists())
+                .andExpect(jsonPath("$.backupData.deviceModel").exists())
+                .andExpect(jsonPath("$.backupData.osVersion").exists())
                 .andDo(print());
 
     }
@@ -314,6 +306,7 @@ class BackUpControllerTest {
                         .session(httpSession)
                         .content(requestJson)
                 )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.backUpId").exists())
                 .andExpect(jsonPath("$.date").exists())

@@ -83,14 +83,14 @@ class BackUpServiceTest {
         createEventRequest1 = new DiaryEventRequest("clientId1", LocalDateTime.now(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest2 = new DiaryEventRequest("clientId2", LocalDateTime.now().plusHours(1L), "title2", "content2", DiaryKind.FREE, LocalDateTime.now());
         createEventRequest3 = new DiaryEventRequest("clientId3", LocalDateTime.now().plusHours(2L), "title3", "content3", DiaryKind.FREE, LocalDateTime.now());
-        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
-        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
-        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
+        editEventRequest1_1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
+        editEventRequest1_2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1_2", "editcontent1_2", DiaryKind.FREE, LocalDateTime.now().plusHours(2L));
+        editEventRequest1Last = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1", "editcontent1", DiaryKind.EMOTION, LocalDateTime.now().plusHours(3L));
 
-        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
-        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getClientWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
+        editEventRequest2 = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2", "editcontent2", DiaryKind.QUESTION, LocalDateTime.now().plusHours(2L));
+        editEventRequest2Last = new DiaryEventRequest(createEventRequest2.getClientId(), createEventRequest2.getWritingDate(), "edittitle2Last", "editcontent2Last", DiaryKind.QUESTION, LocalDateTime.now().plusHours(3L));
 
-        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
+        deleteEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "title1", "content1", DiaryKind.FREE, LocalDateTime.now().plusHours(4L));
 
         editExistEventRequest1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_1", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(1L));
         editExistEventRequest1_1 = new DiaryEventRequest(diary1.getClientId(), diary1.getClientWritingDate(), "edittitle1_2", "editcontent1_1", DiaryKind.QUESTION, diary1.getClientWritingDate().plusHours(2L));
@@ -185,8 +185,8 @@ class BackUpServiceTest {
     @DisplayName("기존에 백업이 존재 하지 않는 경우 모든 Create 이벤트를 저장하고 만약 클라이언트 작성시간이 동일한 edit 이벤트가 존재 하는 경우 해당 create이벤트가 수정되어 저장되어야 한다.")
     public void createTestIfNotExistBeforeBackUpAndExistEventList() throws Exception {
         //given
-        DiaryEventRequest editEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1", "editcontent1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
-        DiaryEventRequest editEventRequest2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getClientWritingDate(), "edittitle1", "editcontent1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
+        DiaryEventRequest editEventRequest1 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1", "editcontent1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
+        DiaryEventRequest editEventRequest2 = new DiaryEventRequest(createEventRequest1.getClientId(), createEventRequest1.getWritingDate(), "edittitle1", "editcontent1", DiaryKind.QUESTION, LocalDateTime.now().plusHours(1L));
 
         List<DiaryEventRequest> createList = new ArrayList<>();
         List<DiaryEventRequest> editList = new ArrayList<>();
@@ -712,11 +712,11 @@ class BackUpServiceTest {
         RestoreDiaryResponse restoreResponse = backUpService.restoreDiary(avatar.getId(), backUp.getId());
         //when
         //then
-        assertThat(restoreResponse.getDiaryList().size()).isEqualTo(backUp.getCount());
-        assertThat(restoreResponse.getBackUpId()).isEqualTo(backUp.getId());
-        assertThat(restoreResponse.getDiaryList()).extracting("title").contains(diary1.getTitle(), diary2.getTitle(), diary3.getTitle());
-        assertThat(restoreResponse.getDiaryList()).extracting("content").contains(diary1.getContent(), diary2.getContent(), diary3.getContent());
-        assertThat(restoreResponse.getDiaryList()).extracting("diaryKind").contains(diary1.getKind().getValue(), diary2.getKind().getValue(), diary3.getKind().getValue());
+        assertThat(restoreResponse.getRecordList().size()).isEqualTo(backUp.getCount());
+        assertThat(restoreResponse.getBackupData().getBackUpId()).isEqualTo(backUp.getId());
+        assertThat(restoreResponse.getRecordList()).extracting("title").contains(diary1.getTitle(), diary2.getTitle(), diary3.getTitle());
+        assertThat(restoreResponse.getRecordList()).extracting("content").contains(diary1.getContent(), diary2.getContent(), diary3.getContent());
+        assertThat(restoreResponse.getRecordList()).extracting("diaryKind").contains(diary1.getKind().getValue(), diary2.getKind().getValue(), diary3.getKind().getValue());
     }
 
     @Test

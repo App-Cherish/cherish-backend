@@ -14,34 +14,34 @@ public class KakaoLoginRequest {
     @NotBlank
     private String oauthId;
 
-    private Platform platform;
-
     @NotBlank
     private String accessToken;
+
+    private String platform;
 
     @NotBlank
     private String refreshToken;
 
     @NotBlank
-    private String deviceId;
+    private String osVersion;
     @NotBlank
     private String deviceType;
 
-    public KakaoLoginRequest(String oauthId, Platform platform, String accessToken, String refreshToken, String deviceId, String deviceType) {
+    public KakaoLoginRequest(String oauthId, String accessToken, String platform, String refreshToken, String osVersion, String deviceType) {
         this.oauthId = oauthId;
-        this.platform = platform;
         this.accessToken = accessToken;
+        this.platform = platform;
         this.refreshToken = refreshToken;
-        this.deviceId = deviceId;
+        this.osVersion = osVersion;
         this.deviceType = deviceType;
     }
 
     public CreateTokenDto toTokenDto(Long avatarId) {
-        return new CreateTokenDto(deviceId, deviceType, avatarId);
+        return new CreateTokenDto(osVersion, deviceType, avatarId);
     }
 
 
     public LoginDto toLoginDto() {
-        return new LoginDto(this.oauthId, this.platform, this.accessToken, this.refreshToken, this.deviceId, this.deviceType);
+        return new LoginDto(this.oauthId, Platform.KAKAO, this.accessToken, this.refreshToken, this.osVersion, this.deviceType);
     }
 }

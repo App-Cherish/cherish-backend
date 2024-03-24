@@ -1,5 +1,6 @@
 package com.cherish.backend.controller.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ public class BackUpHistoryResponse {
 
     private final String backUpId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private final LocalDateTime date;
 
     private final String deviceModel;

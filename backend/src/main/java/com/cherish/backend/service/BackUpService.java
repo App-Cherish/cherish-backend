@@ -96,7 +96,9 @@ public class BackUpService {
 
         BackUp backUp = diaryList.get(0).getBackUp();
 
-        return new RestoreDiaryResponse(diaryResponse, backUp.getId(), backUp.getCreatedDate(), backUp.getCount(), backUp.getDeviceType(), backUp.getOsVersion());
+        BackUpHistoryResponse backUpHistoryResponse = new BackUpHistoryResponse(backUp.getId(), backUp.getCreatedDate(), backUp.getDeviceType(), backUp.getOsVersion(), backUp.getCount());
+
+        return new RestoreDiaryResponse(diaryResponse, backUpHistoryResponse);
     }
 
 }

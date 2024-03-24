@@ -2,7 +2,6 @@ package com.cherish.backend.controller.dto.request;
 
 
 import com.cherish.backend.domain.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -12,8 +11,7 @@ public class DiaryEventRequest {
 
     private final String clientId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private final LocalDateTime clientWritingDate;
+    private final LocalDateTime writingDate;
 
     private final String title;
 
@@ -21,12 +19,11 @@ public class DiaryEventRequest {
 
     private final DiaryKind diaryKind;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private final LocalDateTime eventDate;
 
-    public DiaryEventRequest(String clientId, LocalDateTime clientWritingDate, String title, String content, DiaryKind diaryKind, LocalDateTime eventDate) {
+    public DiaryEventRequest(String clientId, LocalDateTime writingDate, String title, String content, DiaryKind diaryKind, LocalDateTime eventDate) {
         this.clientId = clientId;
-        this.clientWritingDate = clientWritingDate;
+        this.writingDate = writingDate;
         this.title = title;
         this.content = content;
         this.diaryKind = diaryKind;
@@ -39,7 +36,7 @@ public class DiaryEventRequest {
                 this.diaryKind,
                 this.title,
                 this.content,
-                this.getClientWritingDate(),
+                this.writingDate,
                 diaryEventType,
                 this.eventDate,
                 backUp,
@@ -52,7 +49,7 @@ public class DiaryEventRequest {
                 this.clientId,
                 this.title,
                 this.content,
-                this.clientWritingDate,
+                this.writingDate,
                 avatar,
                 backUp);
     }

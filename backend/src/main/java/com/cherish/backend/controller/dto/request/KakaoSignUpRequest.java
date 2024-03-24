@@ -18,12 +18,14 @@ public class KakaoSignUpRequest {
     @NotBlank
     private String name;
 
+    private String platfrom;
+
     @NotNull
     private LocalDate birth;
 
     private Gender gender;
     @NotBlank
-    private String deviceId;
+    private String osVersion;
     @NotBlank
     private String deviceType;
 
@@ -33,18 +35,19 @@ public class KakaoSignUpRequest {
     @NotBlank
     private String refreshToken;
 
-    public KakaoSignUpRequest(String oauthId, String name, LocalDate birth, Gender gender, String deviceId, String deviceType, String accessToken, String refreshToken) {
+    public KakaoSignUpRequest(String oauthId, String name, String platfrom, LocalDate birth, Gender gender, String osVersion, String deviceType, String accessToken, String refreshToken) {
         this.oauthId = oauthId;
         this.name = name;
+        this.platfrom = platfrom;
         this.birth = birth;
         this.gender = gender;
-        this.deviceId = deviceId;
+        this.osVersion = osVersion;
         this.deviceType = deviceType;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 
     public SignUpDto toSignUpDto() {
-        return new SignUpDto(this.oauthId, this.name, this.birth, this.gender, this.deviceId, this.deviceType, this.accessToken, this.refreshToken);
+        return new SignUpDto(this.oauthId, this.name, this.birth, this.gender, this.osVersion, this.deviceType, this.accessToken, this.refreshToken);
     }
 }

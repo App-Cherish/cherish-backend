@@ -90,7 +90,7 @@ public class DiaryEventRequestList {
                 .filter(diary -> map.containsKey(diary.getClientId()))
                 .map(diary -> {
                     DiaryEventRequest request = map.get(diary.getClientId());
-                    return Diary.of(diary.getId(), diary.getClientId(), request.getDiaryKind(), request.getTitle(), request.getContent(), request.getClientWritingDate(), avatar, diary.getBackUp());
+                    return Diary.of(diary.getId(), diary.getClientId(), request.getDiaryKind(), request.getTitle(), request.getContent(), request.getWritingDate(), avatar, diary.getBackUp());
                 })
                 .toList();
     }
@@ -117,7 +117,7 @@ public class DiaryEventRequestList {
 
         if (editLastEventMap.isEmpty()) {
             return this.createEventList.stream()
-                    .map(e -> Diary.of(e.getDiaryKind(), e.getClientId(), e.getTitle(), e.getContent(), e.getClientWritingDate(), avatar, backUp))
+                    .map(e -> Diary.of(e.getDiaryKind(), e.getClientId(), e.getTitle(), e.getContent(), e.getWritingDate(), avatar, backUp))
                     .toList();
         }
 

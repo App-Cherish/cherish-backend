@@ -46,7 +46,7 @@ public class AccountController {
         Long avatarId = accountService.signUp(kakaoSignUpRequest.toSignUpDto(), Platform.KAKAO);
 
         return sessionTokenService.createToken(new CreateTokenDto(
-                kakaoSignUpRequest.getDeviceId(),
+                kakaoSignUpRequest.getOsVersion(),
                 kakaoSignUpRequest.getDeviceType(),
                 avatarId));
     }

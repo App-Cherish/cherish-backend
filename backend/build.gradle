@@ -46,6 +46,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.springframework.session:spring-session-core'
     implementation 'org.springframework.session:spring-session-jdbc'
     testImplementation 'junit:junit:4.13.1'
@@ -65,7 +66,7 @@ dependencies {
     swaggerUI 'org.webjars:swagger-ui:4.11.1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+    testImplementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
 }
 
@@ -105,12 +106,12 @@ tasks.withType(GenerateSwaggerUI) {
     doFirst {
         def swaggerUIFile = file("${openapi3.outputDirectory}/openapi3.yaml")
 
-        def securitySchemesContent = "  securitySchemes:\n" +               \
-                                                   "    APIKey:\n" +               \
-                                                   "      type: apiKey\n" +               \
-                                                   "      name: SESSION\n" +               \
-                                                   "      in: COOKIE\n" +              \
-                                                   "security:\n" +
+        def securitySchemesContent = "  securitySchemes:\n" +                 \
+                                                     "    APIKey:\n" +                 \
+                                                     "      type: apiKey\n" +                 \
+                                                     "      name: SESSION\n" +                 \
+                                                     "      in: COOKIE\n" +                \
+                                                     "security:\n" +
                 "  - APIKey: []  # Apply the security scheme here"
 
         swaggerUIFile.append securitySchemesContent
